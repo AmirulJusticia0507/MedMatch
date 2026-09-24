@@ -3388,3 +3388,25 @@ strong,
 :root[data-theme="dark"] .help-contact > div { background: var(--surface); border-color: var(--line); }
 :root[data-theme="dark"] .preference-row i { background: #41514d; }
 :root[data-theme="dark"] .app-footer { color: var(--ink-soft); border-color: var(--line); }
+
+.methodology-view { display: grid; gap: 20px; }
+.methodology-back { display: inline-flex; width: fit-content; align-items: center; gap: 7px; padding: 0; background: transparent; color: var(--ink-soft); font-weight: 700; }
+.methodology-hero { padding: 34px; border-radius: 8px; background: var(--ink-deep); color: white; }
+.methodology-hero h1 { max-width: 720px; margin-top: 14px; font-size: 34px; }
+.methodology-hero p { max-width: 720px; margin: 12px 0 0; color: #c4ddd5; line-height: 1.7; }
+.methodology-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.methodology-steps article { display: grid; align-content: start; gap: 8px; padding: 20px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.methodology-steps article > span { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 6px; background: var(--mint); color: var(--green); }
+.methodology-steps p, .methodology-factor-grid p, .methodology-note p { margin: 0; color: var(--ink-soft); font-size: 13px; line-height: 1.6; }
+.methodology-factors { padding: 24px; }
+.methodology-factor-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.methodology-factor-grid article { position: relative; padding: 18px; border: 1px solid var(--line-soft); border-radius: 8px; }
+.methodology-factor__icon { display: grid; width: 36px; height: 36px; place-items: center; color: var(--green); }
+.methodology-factor__weight { position: absolute; top: 18px; right: 18px; color: var(--green); font-size: 18px; font-weight: 800; }
+.methodology-factor-grid h3 { margin: 10px 0 6px; font-size: 15px; }
+.methodology-note { display: flex; gap: 14px; padding: 20px; border: 1px solid #cce8dc; border-radius: 8px; background: var(--mint); color: var(--green); }
+.methodology-note div { display: grid; gap: 5px; }
+.methodology-note strong { color: var(--ink); }
+.methodology-action { display: flex; justify-content: flex-end; }
+@media (max-width: 1000px) { .methodology-steps, .methodology-factor-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .methodology-hero { padding: 24px; } .methodology-hero h1 { font-size: 27px; } .methodology-steps, .methodology-factor-grid { grid-template-columns: 1fr; } }

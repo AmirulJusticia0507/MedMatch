@@ -306,7 +306,7 @@ export function OverviewView({
   selectedHospitalId: string | null;
   onSearch: (event: FormEvent<HTMLFormElement>) => void;
   onSelectHospital: (hospital: HospitalRecommendation) => void;
-  onNavigate: (view: "recommendations" | "facilities" | "preferences") => void;
+  onNavigate: (view: "recommendations" | "facilities" | "preferences" | "methodology") => void;
 }) {
   const totalBeds = recommendations.reduce((total, hospital) => total + hospital.availableBeds, 0);
   const hasAvailabilityData = recommendations.some((hospital) => !hospital.isMasterDataOnly);
@@ -376,8 +376,8 @@ export function OverviewView({
           <div className="insight-panel__content">
             <span className="insight-panel__label"><Zap size={14} /> Insight MedMatch</span>
             <h2>Rute yang lebih baik<br />dimulai dari data.</h2>
-            <p>Algoritma kami memperhitungkan 4 faktor agar pasien tidak hanyauhn sampai, tetapi juga mendapat layanan lebih cepat.</p>
-            {recommendations[0] ? <button className="button button--light" onClick={() => onSelectHospital(recommendations[0])}>Pelajari cara kerja <ArrowRight size={15} /></button> : null}
+            <p>Algoritma kami memperhitungkan 4 faktor agar pasien tidak hanya sampai, tetapi juga mendapat layanan lebih cepat.</p>
+            <button className="button button--light" onClick={() => onNavigate("methodology")}>Pelajari cara kerja <ArrowRight size={15} /></button>
           </div>
           <div className="insight-panel__rings"><span /><span /><span /></div>
         </section>

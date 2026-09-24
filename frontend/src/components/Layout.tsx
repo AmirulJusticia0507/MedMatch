@@ -2,7 +2,7 @@ import { ArrowRight, Bell, Bot, Building2, CalendarDays, ChevronDown, ChevronRig
 import type { LucideIcon } from "lucide-react";
 import type { AuthResponse, DataSource } from "../types";
 
-export type ViewId = "overview" | "recommendations" | "facilities" | "assistant" | "account" | "preferences" | "help";
+export type ViewId = "overview" | "recommendations" | "facilities" | "assistant" | "account" | "preferences" | "help" | "methodology";
 
 interface NavItem { id: ViewId; label: string; icon: LucideIcon; badge?: string; }
 
@@ -15,7 +15,7 @@ const navItems: NavItem[] = [
 ];
 
 export const viewTitles: Record<ViewId, string> = {
-  overview: "Ringkasan", recommendations: "Rekomendasi", facilities: "Fasilitas", assistant: "Asisten AI", account: "Akun", preferences: "Preferensi", help: "Pusat Bantuan"
+  overview: "Ringkasan", recommendations: "Rekomendasi", facilities: "Fasilitas", assistant: "Asisten AI", account: "Akun", preferences: "Preferensi", help: "Pusat Bantuan", methodology: "Cara Kerja"
 };
 
 function formatToday(): string {

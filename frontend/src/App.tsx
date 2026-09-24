@@ -7,6 +7,7 @@ import { HospitalDetail } from "./components/HospitalDetail";
 import { Sidebar, ThemeToggle, Topbar, viewTitles, type ViewId } from "./components/Layout";
 import { OverviewView, RecommendationsView } from "./components/Recommendations";
 import { HelpCenterView, PreferencesView } from "./components/SettingsViews";
+import { MethodologyView } from "./components/MethodologyView";
 import { medmatchApi } from "./api/medmatch";
 import { initialChatMessages, mockRecommendations, specialtyOptions } from "./data/mockData";
 import { getLocationCodes, getLocationLabel, indonesiaLocations } from "./data/indonesiaLocations";
@@ -329,6 +330,8 @@ function App() {
     <PreferencesView />
   ) : activeView === "help" ? (
     <HelpCenterView onOpenAssistant={() => handleNavigate("assistant")} />
+  ) : activeView === "methodology" ? (
+    <MethodologyView onBack={() => handleNavigate("overview")} onOpenRecommendations={() => handleNavigate("recommendations")} />
   ) : (
     <AssistantView messages={chatMessages} input={chatInput} isLoading={isChatLoading} online={chatOnline} onInputChange={setChatInput} onSubmit={handleChatSubmit} />
   );
