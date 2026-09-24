@@ -1390,11 +1390,67 @@ strong,
 
 .map-canvas::before,
 .map-canvas::after {
-  position: absolute;
-  content: "";
-  background: rgba(111, 170, 137, 0.08);
+  display: none;
+}
+
+.nearby-map {
+  width: 100%;
+  height: 100%;
+  font-family: "DM Sans", sans-serif;
+}
+
+.nearby-map .leaflet-control-attribution {
+  font-size: 8px;
+}
+
+.nearby-map .leaflet-popup-content {
+  margin: 11px 14px;
+  color: #58736c;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.nearby-map .leaflet-popup-content strong {
+  color: var(--ink);
+  font-size: 11px;
+}
+
+.map-pin-wrapper {
+  background: transparent;
+  border: 0;
+}
+
+.map-pin {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  color: #fff;
+  background: #288e71;
+  border: 3px solid rgba(255, 255, 255, 0.95);
   border-radius: 50%;
-  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(20, 74, 62, 0.28);
+  font-size: 10px;
+  font-weight: 800;
+  transition: background 160ms ease, transform 160ms ease;
+}
+
+.map-pin--hospital.is-selected {
+  background: #e2785e;
+  transform: scale(1.15);
+}
+
+.map-pin--patient {
+  background: #fff;
+  border-color: #2a8e72;
+  box-shadow: 0 0 0 5px rgba(42, 142, 114, 0.2), 0 4px 12px rgba(20, 74, 62, 0.25);
+}
+
+.map-pin--patient i {
+  width: 9px;
+  height: 9px;
+  background: #2a8e72;
+  border-radius: 50%;
 }
 
 .map-canvas::before {

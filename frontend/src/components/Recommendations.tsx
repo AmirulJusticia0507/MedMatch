@@ -5,11 +5,12 @@ import { bedClassOptions } from "../data/mockData";
 import { getLocationLabel, indonesiaLocations } from "../data/indonesiaLocations";
 import type { DataSource, HospitalRecommendation, RecommendationFilters, SpecialtyOption } from "../types";
 import { FacilitiesTable } from "./Facilities";
+import NearbyMap from "./NearbyMap";
 
 type FilterKey = "specialtyCode" | "bedClass";
 
 interface RecommendationCardProps { hospital: HospitalRecommendation; rank: number; selected: boolean; onSelect: (hospital: HospitalRecommendation) => void; }
-interface CapacityMapProps { recommendations: HospitalRecommendation[]; locationLabel: string; selectedHospitalId: string | null; onSelect: (hospital: HospitalRecommendation) => void; }
+interface CapacityMapProps { recommendations: HospitalRecommendation[]; filters: RecommendationFilters; locationLabel: string; selectedHospitalId: string | null; onSelect: (hospital: HospitalRecommendation) => void; }
 interface SearchHeroProps {
   filters: RecommendationFilters; specialties: SpecialtyOption[]; locationLabel: string; isRefreshing: boolean; isLocating: boolean;
   dataSource: DataSource; notice: string; noticeVisible: boolean; onFilterChange: (key: FilterKey, value: string) => void;
@@ -17,7 +18,6 @@ interface SearchHeroProps {
   onQuickSearch: (code: string) => void; onDismissNotice: () => void;
 }
 
-const mapMarkerPositions = [{ x: 48, y: 48 }, { x: 35, y: 35 }, { x: 68, y: 64 }, { x: 27, y: 69 }, { x: 76, y: 31 }];
 function getQueueLabel(queue: number): string { if (queue <= 5) return "Antrian ringan"; if (queue <= 15) return "Normal"; return "Sedang padat"; }
 function getQueueClass(queue: number): string { if (queue <= 5) return "queue-good"; if (queue <= 15) return "queue-normal"; return "queue-busy"; }
 function formatNumber(value: number): string { return new Intl.NumberFormat("id-ID").format(value); }
@@ -236,7 +236,7 @@ function RecommendationCard({ hospital, rank, selected, onSelect }: Recommendati
   );
 }
 
-function CapacityMap({ recommendations, locationLabel, selectedHospitalId, onSelect }: CapacityMapProps) {
+function CapacityMap({ recommendations, filters, locationLabel, selectedHospitalId, onSelect }: CapacityMapProps) {
   const visibleHospitals = recommendations.slice(0, 5);
   const availableBeds = recommendations.reduce((total, hospital) => total + hospital.availableBeds, 0);
   const averageQueue = recommendations.length
@@ -255,44 +255,14 @@ function CapacityMap({ recommendations, locationLabel, selectedHospitalId, onSel
         </button>
       </div>
       <div className="map-canvas">
-        <svg className="map-lines" viewBox="0 0 500 340" preserveAspectRatio="none" aria-hidden="true">
-          <defs>
-            <pattern id="map-grid" width="32" height="32" patternUnits="userSpaceOnUse">
-              <path d="M 32 0 L 0 0 0 32" fill="none" stroke="rgba(18,60,58,.06)" strokeWidth="1" />
-            </pattern>
-          </defs>
-          <rect width="500" height="340" fill="url(#map-grid)" />
-          <path d="M-20 278 C65 245 87 198 145 210 S226 284 291 236 S367 121 526 143" fill="none" stroke="rgba(18,60,58,.12)" strokeWidth="18" />
-          <path d="M-20 278 C65 245 87 198 145 210 S226 284 291 236 S367 121 526 143" fill="none" stroke="rgba(255,255,255,.82)" strokeWidth="11" />
-          <path d="M42 14 C89 70 129 89 161 139 S190 244 257 333" fill="none" stroke="rgba(18,60,58,.08)" strokeWidth="9" />
-          <path d="M42 14 C89 70 129 89 161 139 S190 244 257 333" fill="none" stroke="rgba(255,255,255,.7)" strokeWidth="4" />
-          <path d="M340 -10 C300 54 303 88 354 125 S425 177 476 332" fill="none" stroke="rgba(18,60,58,.08)" strokeWidth="7" />
-          <path d="M340 -10 C300 54 303 88 354 125 S425 177 476 332" fill="none" stroke="rgba(255,255,255,.74)" strokeWidth="3" />
-          <path d="M0 101 C104 117 135 112 210 74 S340 28 510 65" fill="none" stroke="rgba(18,60,58,.07)" strokeWidth="5" />
-          <path d="M0 101 C104 117 135 112 210 74 S340 28 510 65" fill="none" stroke="rgba(255,255,255,.72)" strokeWidth="2" />
-          <circle cx="145" cy="210" r="27" fill="rgba(86,180,155,.12)" />
-          <circle cx="145" cy="210" r="8" fill="rgba(86,180,155,.22)" />
-        </svg>
-        <span className="map-label map-label--north">{locationLabel.toUpperCase()}</span>
-        <span className="map-you"><span /> Lokasi Anda</span>
-        {visibleHospitals.map((hospital, index) => {
-          const position = mapMarkerPositions[index];
-          return (
-            <button
-              className={`map-marker ${selectedHospitalId === hospital.hospitalId ? "is-active" : ""}`}
-              key={hospital.hospitalId}
-              style={{ left: `${position.x}%`, top: `${position.y}%` }}
-              onClick={() => onSelect(hospital)}
-              aria-label={`Lihat ${hospital.hospitalName}`}
-            >
-              <span>{index + 1}</span>
-            </button>
-          );
-        })}
-        <div className="map-legend">
-          <span><i className="map-legend__dot map-legend__dot--available" /> Tersedia</span>
-          <span><i className="map-legend__dot map-legend__dot--busy" /> Antrian tinggi</span>
-        </div>
+        <NearbyMap
+          latitude={filters.latitude}
+          longitude={filters.longitude}
+          locationLabel={locationLabel}
+          hospitals={visibleHospitals}
+          selectedHospitalId={selectedHospitalId}
+          onSelect={onSelect}
+        />
       </div>
       <div className="map-summary">
         <div>
@@ -383,7 +353,7 @@ export function OverviewView({
             ))}
           </div>
         </section>
-        <CapacityMap recommendations={recommendations} locationLabel={locationLabel} selectedHospitalId={selectedHospitalId} onSelect={onSelectHospital} />
+        <CapacityMap recommendations={recommendations} filters={filters} locationLabel={locationLabel} selectedHospitalId={selectedHospitalId} onSelect={onSelectHospital} />
       </div>
       <div className="content-grid content-grid--secondary">
         <FacilitiesTable recommendations={recommendations} onSelect={onSelectHospital} />
