@@ -298,6 +298,7 @@ function App() {
       onQuickSearch={handleQuickSearch}
       onDismissNotice={() => setNoticeVisible(false)}
       onSelectHospital={setSelectedHospital}
+      onNavigate={handleNavigate}
     />
   ) : activeView === "recommendations" ? (
     <RecommendationsView

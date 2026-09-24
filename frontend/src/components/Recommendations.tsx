@@ -1,5 +1,5 @@
 import type { FormEvent } from "react";
-import { Activity, ArrowRight, BedDouble, Building2, Check, ChevronDown, Clock3, Cross, Filter, Info, LocateFixed, MapPin, MoreHorizontal, Navigation, RefreshCw, Search, SlidersHorizontal, Sparkles, Stethoscope, X, Zap } from "lucide-react";
+import { Activity, ArrowRight, BedDouble, Building2, Check, ChevronDown, ChevronRight, Clock3, Cross, Filter, Info, LocateFixed, MapPin, Navigation, RefreshCw, Search, SlidersHorizontal, Sparkles, Stethoscope, X, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { bedClassOptions } from "../data/mockData";
 import { getLocationLabel, indonesiaLocations } from "../data/indonesiaLocations";
@@ -152,7 +152,8 @@ function MetricCard({
   value,
   detail,
   tone,
-  trend
+  trend,
+  onOpen
 }: {
   icon: LucideIcon;
   label: string;
@@ -160,6 +161,7 @@ function MetricCard({
   detail: string;
   tone: "mint" | "yellow" | "blue" | "coral";
   trend?: string;
+  onOpen: () => void;
 }) {
   return (
     <article className="metric-card">
@@ -174,8 +176,8 @@ function MetricCard({
           {detail}
         </small>
       </div>
-      <button className="metric-card__more" aria-label={`Opsi ${label}`}>
-        <MoreHorizontal size={17} />
+      <button className="metric-card__more" onClick={onOpen} aria-label={`Buka ${label}`} title={`Buka ${label}`}>
+        <ChevronRight size={17} />
       </button>
     </article>
   );
@@ -297,12 +299,14 @@ export function OverviewView({
   onLocate,
   onQuickSearch,
   onDismissNotice,
-  onSelectHospital
+  onSelectHospital,
+  onNavigate
 }: SearchHeroProps & {
   recommendations: HospitalRecommendation[];
   selectedHospitalId: string | null;
   onSearch: (event: FormEvent<HTMLFormElement>) => void;
   onSelectHospital: (hospital: HospitalRecommendation) => void;
+  onNavigate: (view: "recommendations" | "facilities" | "preferences") => void;
 }) {
   const totalBeds = recommendations.reduce((total, hospital) => total + hospital.availableBeds, 0);
   const hasAvailabilityData = recommendations.some((hospital) => !hospital.isMasterDataOnly);
@@ -329,10 +333,10 @@ export function OverviewView({
         onDismissNotice={onDismissNotice}
       />
       <div className="metrics-grid">
-        <MetricCard icon={Building2} label="Fasilitas tersedia" value={String(recommendations.length)} detail="hasil terverifikasi" tone="mint" />
-        <MetricCard icon={Clock3} label="Rata-rata tunggu" value={hasAvailabilityData ? `${averageWait} mnt` : "—"} detail={hasAvailabilityData ? "dari hasil tersedia" : "belum tersedia dari MSI"} tone="yellow" />
-        <MetricCard icon={BedDouble} label="Bed tersedia hari ini" value={hasAvailabilityData ? formatNumber(totalBeds) : "—"} detail={hasAvailabilityData ? `di ${recommendations.length} fasilitas` : "belum tersedia dari MSI"} tone="blue" />
-        <MetricCard icon={Navigation} label="Jangkauan pencarian" value={`${filters.maxDistanceKm} km`} detail="dari lokasi Anda" tone="coral" />
+        <MetricCard icon={Building2} label="Fasilitas tersedia" value={String(recommendations.length)} detail="hasil terverifikasi" tone="mint" onOpen={() => onNavigate("facilities")} />
+        <MetricCard icon={Clock3} label="Rata-rata tunggu" value={hasAvailabilityData ? `${averageWait} mnt` : "—"} detail={hasAvailabilityData ? "dari hasil tersedia" : "belum tersedia dari MSI"} tone="yellow" onOpen={() => onNavigate("recommendations")} />
+        <MetricCard icon={BedDouble} label="Bed tersedia hari ini" value={hasAvailabilityData ? formatNumber(totalBeds) : "—"} detail={hasAvailabilityData ? `di ${recommendations.length} fasilitas` : "belum tersedia dari MSI"} tone="blue" onOpen={() => onNavigate("facilities")} />
+        <MetricCard icon={Navigation} label="Jangkauan pencarian" value={`${filters.maxDistanceKm} km`} detail="dari lokasi Anda" tone="coral" onOpen={() => onNavigate("preferences")} />
       </div>
       <div className="content-grid content-grid--primary">
         <section className="panel recommendations-panel">
