@@ -9,6 +9,34 @@ public static class DbSeeder
     {
         await db.Database.EnsureCreatedAsync();
 
+        await db.Database.ExecuteSqlRawAsync("""
+            CREATE TABLE IF NOT EXISTS "Users" (
+                "Id" uuid PRIMARY KEY,
+                "Email" varchar(320) NOT NULL,
+                "PasswordHash" text NOT NULL,
+                "FullName" varchar(200) NOT NULL,
+                "Role" varchar(30) NOT NULL DEFAULT 'USER',
+                "IsActive" boolean NOT NULL DEFAULT true,
+                "EmailVerifiedAt" timestamp with time zone,
+                "CreatedAt" timestamp with time zone NOT NULL,
+                "UpdatedAt" timestamp with time zone NOT NULL
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS "IX_Users_Email" ON "Users" ("Email");
+
+            CREATE TABLE IF NOT EXISTS "PasswordResetTokens" (
+                "Id" uuid PRIMARY KEY,
+                "UserId" uuid NOT NULL REFERENCES "Users" ("Id") ON DELETE CASCADE,
+                "TokenHash" char(64) NOT NULL,
+                "ExpiresAt" timestamp with time zone NOT NULL,
+                "UsedAt" timestamp with time zone,
+                "CreatedAt" timestamp with time zone NOT NULL
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS "IX_PasswordResetTokens_TokenHash"
+                ON "PasswordResetTokens" ("TokenHash");
+            CREATE INDEX IF NOT EXISTS "IX_PasswordResetTokens_UserId_ExpiresAt"
+                ON "PasswordResetTokens" ("UserId", "ExpiresAt");
+            """);
+
         if (await db.Hospitals.AnyAsync())
         {
             return;

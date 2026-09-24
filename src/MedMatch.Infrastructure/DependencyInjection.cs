@@ -13,10 +13,13 @@ namespace MedMatch.Infrastructure;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        string? connectionString = null)
     {
         services.AddDbContext<MedMatchDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("NeonDbConnection"), 
+            options.UseNpgsql(connectionString ?? configuration.GetConnectionString("NeonDbConnection"),
                 o => o.UseNetTopologySuite()));
 
         services.AddScoped<IHospitalRepository, HospitalRepository>();

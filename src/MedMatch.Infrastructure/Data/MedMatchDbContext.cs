@@ -12,6 +12,8 @@ public class MedMatchDbContext : DbContext
     public DbSet<Specialty> Specialties => Set<Specialty>();
     public DbSet<BedCapacity> BedCapacities => Set<BedCapacity>();
     public DbSet<QueueInfo> Queues => Set<QueueInfo>();
+    public DbSet<UserAccount> Users => Set<UserAccount>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -89,6 +91,27 @@ public class MedMatchDbContext : DbContext
             entity.Property(e => e.HospitalId).HasMaxLength(50);
             entity.Property(e => e.SpecialtyCode).HasMaxLength(50);
             entity.Property(e => e.LastUpdated).HasColumnType("timestamp with time zone");
+        });
+
+        modelBuilder.Entity<UserAccount>(entity =>
+        {
+            entity.ToTable("Users");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Email).HasMaxLength(320).IsRequired();
+            entity.Property(e => e.PasswordHash).IsRequired();
+            entity.Property(e => e.FullName).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Role).HasMaxLength(30).IsRequired();
+            entity.HasIndex(e => e.Email).IsUnique();
+        });
+
+        modelBuilder.Entity<PasswordResetToken>(entity =>
+        {
+            entity.ToTable("PasswordResetTokens");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TokenHash).HasMaxLength(64).IsFixedLength().IsRequired();
+            entity.HasIndex(e => e.TokenHash).IsUnique();
+            entity.HasIndex(e => new { e.UserId, e.ExpiresAt });
+            entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

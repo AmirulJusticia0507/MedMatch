@@ -1,8 +1,13 @@
+using System.Text;
 using MedMatch.Core.DTOs;
 using MedMatch.Core.Interfaces;
+using MedMatch.Core.Models;
 using MedMatch.Infrastructure;
 using MedMatch.Infrastructure.Data;
 using MedMatch.Recommendation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,11 +27,35 @@ builder.Services.AddCors(options =>
     });
 });
 
-var hasDatabaseConfiguration = !string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("NeonDbConnection"));
+var databaseConnectionName = builder.Environment.IsDevelopment() ? "LocalDbConnection" : "NeonDbConnection";
+var databaseConnectionString = builder.Configuration.GetConnectionString(databaseConnectionName);
+var hasDatabaseConfiguration = !string.IsNullOrWhiteSpace(databaseConnectionString);
 if (hasDatabaseConfiguration)
 {
-    builder.Services.AddInfrastructure(builder.Configuration);
+    builder.Services.AddInfrastructure(builder.Configuration, databaseConnectionString!);
     builder.Services.AddRecommendation();
+    builder.Services.AddScoped<AuthService>();
+    builder.Services.AddScoped<IPasswordHasher<UserAccount>, PasswordHasher<UserAccount>>();
+
+    var jwtKey = builder.Configuration["Jwt:Key"]
+        ?? throw new InvalidOperationException("Jwt:Key is required when the database is configured.");
+    builder.Services
+        .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                ValidAudience = builder.Configuration["Jwt:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+                ClockSkew = TimeSpan.FromMinutes(1)
+            };
+        });
+    builder.Services.AddAuthorization();
 }
 
 var app = builder.Build();
@@ -43,6 +72,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 app.UseCors("MedMatchFrontend");
+if (hasDatabaseConfiguration)
+{
+    app.UseAuthentication();
+    app.UseAuthorization();
+}
 
 var summaries = new[]
 {
@@ -90,6 +124,73 @@ if (hasDatabaseConfiguration)
         var db = scope.ServiceProvider.GetRequiredService<MedMatchDbContext>();
         await DbSeeder.InitializeAsync(db);
     }
+
+    app.MapPost("/api/auth/signup", async (SignUpRequest request, AuthService auth) =>
+    {
+        if (string.IsNullOrWhiteSpace(request.FullName) ||
+            !System.Net.Mail.MailAddress.TryCreate(request.Email, out _) ||
+            string.IsNullOrEmpty(request.Password) || request.Password.Length < 8)
+        {
+            return Results.BadRequest(new { error = "Full name, a valid email, and a password of at least 8 characters are required." });
+        }
+
+        var result = await auth.SignUpAsync(request);
+        return result is null
+            ? Results.Conflict(new { error = "Email is already registered." })
+            : Results.Ok(result);
+    })
+    .WithName("SignUp")
+    .WithOpenApi();
+
+    app.MapPost("/api/auth/login", async (LoginRequest request, AuthService auth) =>
+    {
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrEmpty(request.Password))
+        {
+            return Results.BadRequest(new { error = "Email and password are required." });
+        }
+
+        var result = await auth.LoginAsync(request);
+        return result is null
+            ? Results.Json(new { error = "Invalid email or password." }, statusCode: StatusCodes.Status401Unauthorized)
+            : Results.Ok(result);
+    })
+    .WithName("Login")
+    .WithOpenApi();
+
+    app.MapPost("/api/auth/forgot-password", async (
+        ForgotPasswordRequest request,
+        AuthService auth,
+        IWebHostEnvironment environment) =>
+    {
+        if (!System.Net.Mail.MailAddress.TryCreate(request.Email, out _))
+        {
+            return Results.BadRequest(new { error = "A valid email is required." });
+        }
+
+        var token = await auth.CreatePasswordResetTokenAsync(request.Email);
+        return Results.Ok(new
+        {
+            message = "If the email is registered, password reset instructions have been created.",
+            resetToken = environment.IsDevelopment() ? token : null
+        });
+    })
+    .WithName("ForgotPassword")
+    .WithOpenApi();
+
+    app.MapPost("/api/auth/reset-password", async (ResetPasswordRequest request, AuthService auth) =>
+    {
+        if (string.IsNullOrWhiteSpace(request.Token) ||
+            string.IsNullOrEmpty(request.NewPassword) || request.NewPassword.Length < 8)
+        {
+            return Results.BadRequest(new { error = "A valid token and a password of at least 8 characters are required." });
+        }
+
+        return await auth.ResetPasswordAsync(request)
+            ? Results.Ok(new { message = "Password has been reset." })
+            : Results.BadRequest(new { error = "Reset token is invalid or expired." });
+    })
+    .WithName("ResetPassword")
+    .WithOpenApi();
 
     app.MapGet("/api/specialties", async (ISpecialtyRepository repository) =>
         Results.Ok(await repository.GetAllAsync()))

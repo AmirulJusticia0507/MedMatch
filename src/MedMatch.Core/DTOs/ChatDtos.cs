@@ -6,7 +6,6 @@ public class ChatRequestDto
     public string? SystemPrompt { get; set; }
     public List<ChatMessageDto>? History { get; set; }
 }
-
 public class ChatMessageDto
 {
     public string Role { get; set; } = "user";
@@ -22,6 +21,3 @@ public class ChatResponseDto
     public int PromptTokens { get; set; }
     public int CompletionTokens { get; set; }
 }
-
-// touch
-// build-id-2
