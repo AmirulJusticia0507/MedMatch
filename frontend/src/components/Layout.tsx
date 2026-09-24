@@ -2,7 +2,7 @@ import { ArrowRight, Bell, Bot, Building2, CalendarDays, ChevronDown, ChevronRig
 import type { LucideIcon } from "lucide-react";
 import type { AuthResponse, DataSource } from "../types";
 
-export type ViewId = "overview" | "recommendations" | "facilities" | "assistant" | "account";
+export type ViewId = "overview" | "recommendations" | "facilities" | "assistant" | "account" | "preferences" | "help";
 
 interface NavItem { id: ViewId; label: string; icon: LucideIcon; badge?: string; }
 
@@ -15,7 +15,7 @@ const navItems: NavItem[] = [
 ];
 
 export const viewTitles: Record<ViewId, string> = {
-  overview: "Ringkasan", recommendations: "Rekomendasi", facilities: "Fasilitas", assistant: "Asisten AI", account: "Akun"
+  overview: "Ringkasan", recommendations: "Rekomendasi", facilities: "Fasilitas", assistant: "Asisten AI", account: "Akun", preferences: "Preferensi", help: "Pusat Bantuan"
 };
 
 function formatToday(): string {
@@ -97,11 +97,11 @@ export function Sidebar({
 
       <div className="sidebar__section-label sidebar__section-label--secondary">Pengaturan</div>
       <nav className="sidebar__nav" aria-label="Pengaturan">
-        <button className="sidebar__nav-item" onClick={() => onNavigate("account")} title={isCollapsed ? "Preferensi" : undefined}>
+        <button className={`sidebar__nav-item ${activeView === "preferences" ? "is-active" : ""}`} onClick={() => onNavigate("preferences")} title={isCollapsed ? "Preferensi" : undefined}>
           <Settings size={18} />
           <span>Preferensi</span>
         </button>
-        <button className="sidebar__nav-item" onClick={() => onNavigate("assistant")} title={isCollapsed ? "Pusat bantuan" : undefined}>
+        <button className={`sidebar__nav-item ${activeView === "help" ? "is-active" : ""}`} onClick={() => onNavigate("help")} title={isCollapsed ? "Pusat bantuan" : undefined}>
           <CircleHelp size={18} />
           <span>Pusat bantuan</span>
         </button>
@@ -115,7 +115,7 @@ export function Sidebar({
         </span>
         <strong>Data Anda aman</strong>
         <p>Terhubung ke sistem kesehatan nasional.</p>
-        <button onClick={() => onNavigate("assistant")}>
+        <button onClick={() => onNavigate("help")}>
           Pelajari selengkapnya <ArrowRight size={14} />
         </button>
       </div>
