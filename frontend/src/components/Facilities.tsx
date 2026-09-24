@@ -13,7 +13,7 @@ export function FacilitiesTable({ recommendations, onSelect }: FacilitiesTablePr
           <span className="panel-heading__eyebrow">Around you</span>
           <h2>Fasilitas terdekat</h2>
         </div>
-        <button className="panel-heading__link" onClick={() => onSelect(recommendations[0])}>
+        <button className="panel-heading__link" disabled={!recommendations[0]} onClick={() => recommendations[0] && onSelect(recommendations[0])}>
           Lihat semua <ArrowRight size={14} />
         </button>
       </div>
@@ -30,8 +30,9 @@ export function FacilitiesTable({ recommendations, onSelect }: FacilitiesTablePr
             </tr>
           </thead>
           <tbody>
-            {recommendations.slice(0, 4).map((hospital) => (
-              <tr key={hospital.hospitalId}>
+            {recommendations.slice(0, 4).map((hospital) => {
+              const isMasterDataOnly = hospital.isMasterDataOnly ?? false;
+              return <tr key={hospital.hospitalId}>
                 <td>
                   <div className="table-facility">
                     <span className="table-facility__icon"><Cross size={15} /></span>
@@ -39,12 +40,12 @@ export function FacilitiesTable({ recommendations, onSelect }: FacilitiesTablePr
                   </div>
                 </td>
                 <td><strong>{formatDistance(hospital.distanceKm)}</strong><small>{hospital.estimatedTravelMinutes} mnt</small></td>
-                <td><strong>{hospital.currentQueueCount}</strong><small>orang</small></td>
-                <td><strong>{hospital.availableBeds}</strong><small>tersedia</small></td>
-                <td><span className={`status-label status-label--${getQueueClass(hospital.currentQueueCount).replace("queue-", "")}`}><span className="status-dot" />{getQueueLabel(hospital.currentQueueCount)}</span></td>
+                <td><strong>{isMasterDataOnly ? "—" : hospital.currentQueueCount}</strong><small>{isMasterDataOnly ? "belum tersedia" : "orang"}</small></td>
+                <td><strong>{isMasterDataOnly ? "—" : hospital.availableBeds}</strong><small>{isMasterDataOnly ? "belum tersedia" : "tersedia"}</small></td>
+                <td>{isMasterDataOnly ? <span className="status-label"><span className="status-dot" />Data MSI</span> : <span className={`status-label status-label--${getQueueClass(hospital.currentQueueCount).replace("queue-", "")}`}><span className="status-dot" />{getQueueLabel(hospital.currentQueueCount)}</span>}</td>
                 <td><button className="row-action" onClick={() => onSelect(hospital)} aria-label={`Lihat detail ${hospital.hospitalName}`}><ChevronRight size={17} /></button></td>
-              </tr>
-            ))}
+              </tr>;
+            })}
           </tbody>
         </table>
       </div>
@@ -53,6 +54,7 @@ export function FacilitiesTable({ recommendations, onSelect }: FacilitiesTablePr
 }
 
 export function FacilitiesView({ recommendations, onSelectHospital }: { recommendations: HospitalRecommendation[]; onSelectHospital: (hospital: HospitalRecommendation) => void }) {
+  const hasAvailabilityData = recommendations.some((hospital) => !hospital.isMasterDataOnly);
   return (
     <>
       <div className="page-intro page-intro--facilities">
@@ -61,8 +63,8 @@ export function FacilitiesView({ recommendations, onSelectHospital }: { recommen
       </div>
       <div className="facility-summary-strip">
         <div><span className="facility-summary-strip__icon facility-summary-strip__icon--mint"><Building2 size={18} /></span><span><strong>{recommendations.length}</strong><small>fasilitas ditemukan</small></span></div>
-        <div><span className="facility-summary-strip__icon facility-summary-strip__icon--yellow"><Clock3 size={18} /></span><span><strong>18 mnt</strong><small>rata-rata antrean</small></span></div>
-        <div><span className="facility-summary-strip__icon facility-summary-strip__icon--blue"><BedDouble size={18} /></span><span><strong>{recommendations.reduce((sum, item) => sum + item.availableBeds, 0)}</strong><small>bed tersedia</small></span></div>
+        <div><span className="facility-summary-strip__icon facility-summary-strip__icon--yellow"><Clock3 size={18} /></span><span><strong>{hasAvailabilityData ? `${Math.round(recommendations.reduce((sum, item) => sum + item.estimatedWaitMinutes, 0) / recommendations.length)} mnt` : "—"}</strong><small>{hasAvailabilityData ? "rata-rata antrean" : "antrean belum tersedia"}</small></span></div>
+        <div><span className="facility-summary-strip__icon facility-summary-strip__icon--blue"><BedDouble size={18} /></span><span><strong>{hasAvailabilityData ? recommendations.reduce((sum, item) => sum + item.availableBeds, 0) : "—"}</strong><small>{hasAvailabilityData ? "bed tersedia" : "bed belum tersedia"}</small></span></div>
         <div className="facility-summary-strip__sync"><span className="status-dot" /> Sinkronisasi aktif</div>
       </div>
       <FacilitiesTable recommendations={recommendations} onSelect={onSelectHospital} />

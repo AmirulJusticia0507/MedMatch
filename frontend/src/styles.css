@@ -1192,6 +1192,15 @@ strong,
   font-size: 8px;
 }
 
+.match-score--master {
+  color: #6b8b9b;
+}
+
+.match-score--master strong {
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
 .recommendation-card__identity {
   display: flex;
   align-items: center;
@@ -1354,6 +1363,11 @@ strong,
 .queue-busy {
   color: #ca6d5a;
   background: #fff0eb;
+}
+
+.queue-master {
+  color: #5d8090;
+  background: #edf5f7;
 }
 
 .queue-good .status-dot {

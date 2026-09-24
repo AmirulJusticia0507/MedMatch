@@ -37,3 +37,15 @@ public interface IChatAiClient
     Task<ChatResponseDto> ChatAsync(ChatRequestDto request, CancellationToken cancellationToken = default);
     Task<bool> TestConnectionAsync();
 }
+
+public interface ISatuSehatMsiClient
+{
+    bool IsConfigured { get; }
+    Task<List<SatuSehatFacilityDto>> GetFacilitiesAsync(
+        string? provinceCode,
+        string? cityCode,
+        int limit = 20,
+        int page = 1,
+        CancellationToken cancellationToken = default);
+    Task<bool> TestConnectionAsync(CancellationToken cancellationToken = default);
+}

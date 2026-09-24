@@ -21,6 +21,7 @@ public class HospitalRecommendationDto
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public DateTime LastUpdated { get; set; }
+    public bool IsMasterDataOnly { get; set; }
 }
 
 public class RecommendationRequestDto

@@ -8,7 +8,7 @@ import { Sidebar, Topbar, viewTitles, type ViewId } from "./components/Layout";
 import { OverviewView, RecommendationsView } from "./components/Recommendations";
 import { medmatchApi } from "./api/medmatch";
 import { initialChatMessages, mockRecommendations, specialtyOptions } from "./data/mockData";
-import { getLocationLabel, indonesiaLocations } from "./data/indonesiaLocations";
+import { getLocationCodes, getLocationLabel, indonesiaLocations } from "./data/indonesiaLocations";
 import type { AuthResponse, ChatMessage, DataSource, HospitalRecommendation, RecommendationFilters, SpecialtyOption } from "./types";
 
 type FilterKey = "specialtyCode" | "bedClass";
@@ -18,7 +18,9 @@ const defaultFilters: RecommendationFilters = {
   specialtyCode: "CARDIOLOGY",
   bedClass: "KELAS_1",
   maxDistanceKm: 25,
-  maxResults: 5
+  maxResults: 5,
+  provinceCode: "31",
+  cityCode: "3171"
 };
 
 function isAbortError(error: unknown): boolean {
@@ -94,7 +96,9 @@ function App() {
       if (liveRecommendations.length > 0) {
         setRecommendations(liveRecommendations);
         setDataSource("live");
-        setNotice("Data berhasil diperbarui dari MedMatch API.");
+        setNotice(liveRecommendations.some((hospital) => hospital.isMasterDataOnly)
+          ? "Fasilitas dimuat dari Master Sarana Index SATUSEHAT. Data antrean dan bed belum tersedia pada MSI."
+          : "Data berhasil diperbarui dari MedMatch API.");
       } else {
         setRecommendations([]);
         setDataSource("live");
@@ -170,8 +174,15 @@ function App() {
   const handleLocationChange = (label: string) => {
     const location = indonesiaLocations.find((item) => getLocationLabel(item) === label);
     if (!location) return;
+    const codes = getLocationCodes(label);
     setLocationLabel(label);
-    setFilters((current) => ({ ...current, latitude: location.latitude, longitude: location.longitude }));
+    setFilters((current) => ({
+      ...current,
+      latitude: location.latitude,
+      longitude: location.longitude,
+      provinceCode: codes?.provinceCode,
+      cityCode: codes?.cityCode
+    }));
   };
 
   const handleQuickSearch = (code: string) => {
@@ -198,7 +209,9 @@ function App() {
         const nextFilters = {
           ...filters,
           latitude: position.coords.latitude,
-          longitude: position.coords.longitude
+          longitude: position.coords.longitude,
+          provinceCode: undefined,
+          cityCode: undefined
         };
         setFilters(nextFilters);
         setLocationLabel("Lokasi saat ini");

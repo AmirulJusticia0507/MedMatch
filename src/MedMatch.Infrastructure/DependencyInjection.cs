@@ -44,6 +44,14 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    public static IServiceCollection AddSatuSehat(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<SatuSehatMsiOptions>(configuration.GetSection("ExternalApis:SatuSehat"));
+        services.AddHttpClient<ISatuSehatMsiClient, SatuSehatMsiClient>()
+            .AddPolicyHandler(GetRetryPolicy());
+        return services;
+    }
+
     public static IServiceCollection AddChatAi(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<BazaarLinkOptions>(configuration.GetSection("ExternalApis:BazaarLink"));

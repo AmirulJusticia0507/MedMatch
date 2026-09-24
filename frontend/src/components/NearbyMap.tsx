@@ -41,7 +41,8 @@ function MapViewport({ latitude, longitude, hospitals }: { latitude: number; lon
 
 export default function NearbyMap({ latitude, longitude, locationLabel, hospitals, selectedHospitalId, onSelect }: NearbyMapProps) {
   const mappableHospitals = useMemo(() => hospitals.filter((hospital): hospital is MappableHospital =>
-    Number.isFinite(hospital.latitude) && Number.isFinite(hospital.longitude)), [hospitals]);
+    Number.isFinite(hospital.latitude) && Number.isFinite(hospital.longitude) &&
+    !(hospital.latitude === 0 && hospital.longitude === 0)), [hospitals]);
   const patientIcon = useMemo(() => L.divIcon({
     className: "map-pin-wrapper",
     html: '<span class="map-pin map-pin--patient"><i></i></span>',

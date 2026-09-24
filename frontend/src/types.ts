@@ -18,6 +18,7 @@ export interface HospitalRecommendation {
   latitude?: number;
   longitude?: number;
   lastUpdated?: string;
+  isMasterDataOnly?: boolean;
 }
 
 export interface SpecialtyOption {
@@ -33,6 +34,8 @@ export interface RecommendationFilters {
   bedClass: string;
   maxDistanceKm: number;
   maxResults: number;
+  provinceCode?: string;
+  cityCode?: string;
 }
 
 export interface ChatMessage {

@@ -46,6 +46,56 @@ export const indonesiaLocations: IndonesiaLocation[] = [
   { city: "Merauke", province: "Papua Selatan", latitude: -8.4932, longitude: 140.4018 }
 ];
 
+export interface IndonesiaLocationCodes {
+  provinceCode: string;
+  cityCode: string;
+}
+
+const locationCodes: Record<string, IndonesiaLocationCodes> = {
+  "Banda Aceh, Aceh": { provinceCode: "11", cityCode: "1171" },
+  "Medan, Sumatera Utara": { provinceCode: "12", cityCode: "1271" },
+  "Padang, Sumatera Barat": { provinceCode: "13", cityCode: "1371" },
+  "Pekanbaru, Riau": { provinceCode: "14", cityCode: "1471" },
+  "Tanjung Pinang, Kepulauan Riau": { provinceCode: "21", cityCode: "2172" },
+  "Jambi, Jambi": { provinceCode: "15", cityCode: "1571" },
+  "Palembang, Sumatera Selatan": { provinceCode: "16", cityCode: "1671" },
+  "Pangkal Pinang, Kepulauan Bangka Belitung": { provinceCode: "19", cityCode: "1971" },
+  "Bengkulu, Bengkulu": { provinceCode: "17", cityCode: "1771" },
+  "Bandar Lampung, Lampung": { provinceCode: "18", cityCode: "1871" },
+  "Jakarta Pusat, DKI Jakarta": { provinceCode: "31", cityCode: "3171" },
+  "Serang, Banten": { provinceCode: "36", cityCode: "3673" },
+  "Bandung, Jawa Barat": { provinceCode: "32", cityCode: "3273" },
+  "Semarang, Jawa Tengah": { provinceCode: "33", cityCode: "3374" },
+  "Yogyakarta, DI Yogyakarta": { provinceCode: "34", cityCode: "3471" },
+  "Surabaya, Jawa Timur": { provinceCode: "35", cityCode: "3578" },
+  "Denpasar, Bali": { provinceCode: "51", cityCode: "5171" },
+  "Mataram, Nusa Tenggara Barat": { provinceCode: "52", cityCode: "5271" },
+  "Kupang, Nusa Tenggara Timur": { provinceCode: "53", cityCode: "5371" },
+  "Pontianak, Kalimantan Barat": { provinceCode: "61", cityCode: "6171" },
+  "Palangka Raya, Kalimantan Tengah": { provinceCode: "62", cityCode: "6271" },
+  "Banjarmasin, Kalimantan Selatan": { provinceCode: "63", cityCode: "6371" },
+  "Samarinda, Kalimantan Timur": { provinceCode: "64", cityCode: "6472" },
+  "Tanjung Selor, Kalimantan Utara": { provinceCode: "65", cityCode: "6501" },
+  "Manado, Sulawesi Utara": { provinceCode: "71", cityCode: "7171" },
+  "Gorontalo, Gorontalo": { provinceCode: "75", cityCode: "7571" },
+  "Palu, Sulawesi Tengah": { provinceCode: "72", cityCode: "7271" },
+  "Mamuju, Sulawesi Barat": { provinceCode: "76", cityCode: "7671" },
+  "Makassar, Sulawesi Selatan": { provinceCode: "73", cityCode: "7371" },
+  "Kendari, Sulawesi Tenggara": { provinceCode: "74", cityCode: "7471" },
+  "Ambon, Maluku": { provinceCode: "81", cityCode: "8171" },
+  "Sofifi, Maluku Utara": { provinceCode: "82", cityCode: "8272" },
+  "Manokwari, Papua Barat": { provinceCode: "92", cityCode: "9202" },
+  "Sorong, Papua Barat Daya": { provinceCode: "96", cityCode: "9671" },
+  "Jayapura, Papua": { provinceCode: "91", cityCode: "9171" },
+  "Nabire, Papua Tengah": { provinceCode: "94", cityCode: "9401" },
+  "Wamena, Papua Pegunungan": { provinceCode: "95", cityCode: "9501" },
+  "Merauke, Papua Selatan": { provinceCode: "93", cityCode: "9301" }
+};
+
 export function getLocationLabel(location: IndonesiaLocation): string {
   return `${location.city}, ${location.province}`;
+}
+
+export function getLocationCodes(label: string): IndonesiaLocationCodes | undefined {
+  return locationCodes[label];
 }

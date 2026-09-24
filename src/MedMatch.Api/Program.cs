@@ -17,6 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddChatAi(builder.Configuration);
+builder.Services.AddSatuSehat(builder.Configuration);
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("MedMatchFrontend", policy =>
@@ -126,6 +127,138 @@ app.MapGet("/api/chat/health", async (IChatAiClient chatClient) =>
 })
 .WithName("ChatHealth")
 .WithOpenApi();
+
+app.MapGet("/api/msi/health", async (ISatuSehatMsiClient client, CancellationToken cancellationToken) =>
+{
+    if (!client.IsConfigured)
+    {
+        return Results.Ok(new { status = "not_configured", configured = false });
+    }
+
+    var ok = await client.TestConnectionAsync(cancellationToken);
+    return ok
+        ? Results.Ok(new { status = "ok", configured = true })
+        : Results.Json(new { status = "unavailable", configured = true }, statusCode: StatusCodes.Status502BadGateway);
+})
+.WithName("SatusSehatMsiHealth")
+.WithOpenApi();
+
+app.MapGet("/api/msi/recommendations", async (
+    double latitude,
+    double longitude,
+    string? provinceCode,
+    string? cityCode,
+    string? specialtyCode,
+    string? bedClass,
+    int? maxResults,
+    double? maxDistanceKm,
+    int? page,
+    ISatuSehatMsiClient client,
+    ISpatialRoutingClient routingClient,
+    CancellationToken cancellationToken) =>
+{
+    if (!client.IsConfigured)
+    {
+        return Results.Ok(Array.Empty<HospitalRecommendationDto>());
+    }
+
+    if (double.IsNaN(latitude) || double.IsInfinity(latitude) || latitude is < -90 or > 90 ||
+        double.IsNaN(longitude) || double.IsInfinity(longitude) || longitude is < -180 or > 180)
+    {
+        return Results.BadRequest(new { error = "latitude and longitude are invalid." });
+    }
+
+    var facilities = await client.GetFacilitiesAsync(
+        provinceCode,
+        cityCode,
+        200,
+        Math.Max(page ?? 1, 1),
+        cancellationToken);
+
+    var requestedBedClass = string.IsNullOrWhiteSpace(bedClass) ? "KELAS_1" : bedClass;
+    var radiusKm = Math.Clamp(maxDistanceKm ?? 50, 1, 100);
+    var candidates = facilities
+        .Where(facility => facility.StatusAktif && facility.Operasional &&
+            facility.Latitude is >= -90 and <= 90 && facility.Longitude is >= -180 and <= 180 &&
+            !(facility.Latitude == 0 && facility.Longitude == 0))
+        .Select(facility => new
+        {
+            Facility = facility,
+            Distance = CalculateDistance(latitude, longitude, facility.Latitude!.Value, facility.Longitude!.Value)
+        })
+        .Where(item => item.Distance <= radiusKm)
+        .OrderBy(item => item.Distance)
+        .Take(Math.Clamp(maxResults ?? 5, 1, 20))
+        .ToList();
+
+    var results = await Task.WhenAll(candidates.Select(async candidate =>
+        {
+            var facility = candidate.Facility;
+            var facilityLatitude = facility.Latitude!.Value;
+            var facilityLongitude = facility.Longitude!.Value;
+            var distance = candidate.Distance;
+            var travelMinutes = Math.Max(1, (int)Math.Ceiling(distance / 25 * 60));
+
+            try
+            {
+                distance = await routingClient.GetDistanceKmAsync(
+                    latitude, longitude, facilityLatitude, facilityLongitude);
+                travelMinutes = await routingClient.GetTravelTimeMinutesAsync(
+                    latitude, longitude, facilityLatitude, facilityLongitude);
+            }
+            catch
+            {
+                // Keep the straight-line estimate when the public routing service is unavailable.
+            }
+
+            return new HospitalRecommendationDto
+            {
+                HospitalId = string.IsNullOrWhiteSpace(facility.KodeSatusehat) ? facility.KodeSarana : facility.KodeSatusehat,
+                HospitalName = facility.Nama,
+                DistanceKm = Math.Round(distance, 1),
+                EstimatedTravelMinutes = travelMinutes,
+                CurrentQueueCount = 0,
+                EstimatedWaitMinutes = 0,
+                AvailableBeds = 0,
+                BedClass = requestedBedClass,
+                RecommendationScore = 0,
+                SpecialtyCode = specialtyCode ?? string.Empty,
+                SpecialtyName = "Master Sarana Index",
+                HospitalType = MapHospitalType(facility.KodeJenisSarana),
+                Address = facility.Alamat,
+                Phone = facility.Telepon,
+                Latitude = facilityLatitude,
+                Longitude = facilityLongitude,
+                LastUpdated = DateTime.UtcNow,
+                IsMasterDataOnly = true
+            };
+        }));
+
+    return Results.Ok(results.OrderBy(result => result.DistanceKm));
+})
+.WithName("GetSatusSehatMsiRecommendations")
+.WithOpenApi();
+
+static double CalculateDistance(double latitude1, double longitude1, double latitude2, double longitude2)
+{
+    const double earthRadiusKm = 6371;
+    var latitudeDelta = ToRadians(latitude2 - latitude1);
+    var longitudeDelta = ToRadians(longitude2 - longitude1);
+    var a = Math.Pow(Math.Sin(latitudeDelta / 2), 2) +
+            Math.Cos(ToRadians(latitude1)) * Math.Cos(ToRadians(latitude2)) *
+            Math.Pow(Math.Sin(longitudeDelta / 2), 2);
+    return earthRadiusKm * 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+}
+
+static double ToRadians(double degrees) => degrees * Math.PI / 180;
+
+static HospitalType MapHospitalType(string? facilityTypeCode) => facilityTypeCode switch
+{
+    "102" => HospitalType.Puskesmas,
+    "103" => HospitalType.KlinikPratama,
+    "104" => HospitalType.RumahSakitUmum,
+    _ => HospitalType.RumahSakitUmum
+};
 
 if (!hasDatabaseConfiguration)
 {

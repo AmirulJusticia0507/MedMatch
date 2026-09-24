@@ -111,6 +111,20 @@ export const medmatchApi = {
       maxResults: String(filters.maxResults)
     });
 
+    if (filters.provinceCode) params.set("provinceCode", filters.provinceCode);
+    if (filters.cityCode) params.set("cityCode", filters.cityCode);
+
+    if (filters.provinceCode && filters.cityCode) {
+      try {
+        const msiResult = await request<HospitalRecommendation[]>(`/api/msi/recommendations?${params.toString()}`, { signal });
+        if (Array.isArray(msiResult) && msiResult.length > 0) {
+          return msiResult.map(normalizeRecommendation);
+        }
+      } catch {
+        // Fall back to locally synchronized facilities when MSI is temporarily unavailable.
+      }
+    }
+
     const result = await request<HospitalRecommendation[]>(`/api/recommendations?${params.toString()}`, { signal });
     return Array.isArray(result) ? result.map(normalizeRecommendation) : [];
   },

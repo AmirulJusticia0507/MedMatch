@@ -183,15 +183,16 @@ function MetricCard({
 
 function RecommendationCard({ hospital, rank, selected, onSelect }: RecommendationCardProps) {
   const queueClass = getQueueClass(hospital.currentQueueCount);
+  const isMasterDataOnly = hospital.isMasterDataOnly ?? false;
   const typeLabel = typeof hospital.hospitalType === "number" ? hospitalTypeLabels[hospital.hospitalType] : hospital.hospitalType;
 
   return (
     <article className={`recommendation-card ${selected ? "is-selected" : ""}`}>
       <div className="recommendation-card__topline">
         <span className="rank-badge">#{rank}</span>
-        <span className="match-score">
-          <strong>{Math.round(hospital.recommendationScore)}%</strong>
-          <small>cocok</small>
+        <span className={`match-score ${isMasterDataOnly ? "match-score--master" : ""}`}>
+          {isMasterDataOnly ? <strong>MSI</strong> : <strong>{Math.round(hospital.recommendationScore)}%</strong>}
+          <small>{isMasterDataOnly ? "master data" : "cocok"}</small>
         </span>
       </div>
       <div className="recommendation-card__identity">
@@ -212,21 +213,21 @@ function RecommendationCard({ hospital, rank, selected, onSelect }: Recommendati
       <div className="recommendation-card__metrics">
         <div>
           <Navigation size={14} />
-          <span><strong>{hospital.estimatedTravelMinutes} mnt</strong><small>perjalanan</small></span>
+          <span><strong>{hospital.estimatedTravelMinutes} mnt</strong><small>estimasi rute</small></span>
         </div>
         <div>
           <Clock3 size={14} />
-          <span><strong>{hospital.estimatedWaitMinutes} mnt</strong><small>estimasi tunggu</small></span>
+          <span><strong>{isMasterDataOnly ? "—" : `${hospital.estimatedWaitMinutes} mnt`}</strong><small>{isMasterDataOnly ? "belum tersedia" : "estimasi tunggu"}</small></span>
         </div>
         <div>
           <BedDouble size={14} />
-          <span><strong>{hospital.availableBeds} bed</strong><small>{hospital.bedClass.replace("KELAS_", "Kelas ").toLowerCase()}</small></span>
+          <span><strong>{isMasterDataOnly ? "—" : `${hospital.availableBeds} bed`}</strong><small>{isMasterDataOnly ? "belum tersedia" : hospital.bedClass.replace("KELAS_", "Kelas ").toLowerCase()}</small></span>
         </div>
       </div>
       <div className="recommendation-card__bottom">
-        <span className={`queue-pill ${queueClass}`}>
+        <span className={`queue-pill ${isMasterDataOnly ? "queue-master" : queueClass}`}>
           <span className="status-dot" />
-          {getQueueLabel(hospital.currentQueueCount)} · {hospital.currentQueueCount} orang
+          {isMasterDataOnly ? "Data master MSI" : `${getQueueLabel(hospital.currentQueueCount)} · ${hospital.currentQueueCount} orang`}
         </span>
         <button className="text-button" onClick={() => onSelect(hospital)}>
           Detail <ArrowRight size={14} />
@@ -304,6 +305,7 @@ export function OverviewView({
   onSelectHospital: (hospital: HospitalRecommendation) => void;
 }) {
   const totalBeds = recommendations.reduce((total, hospital) => total + hospital.availableBeds, 0);
+  const hasAvailabilityData = recommendations.some((hospital) => !hospital.isMasterDataOnly);
   const averageWait = recommendations.length
     ? Math.round(recommendations.reduce((total, hospital) => total + hospital.estimatedWaitMinutes, 0) / recommendations.length)
     : 0;
@@ -328,8 +330,8 @@ export function OverviewView({
       />
       <div className="metrics-grid">
         <MetricCard icon={Building2} label="Fasilitas tersedia" value={String(recommendations.length)} detail="hasil terverifikasi" tone="mint" />
-        <MetricCard icon={Clock3} label="Rata-rata tunggu" value={`${averageWait} mnt`} detail="dari hasil tersedia" tone="yellow" />
-        <MetricCard icon={BedDouble} label="Bed tersedia hari ini" value={formatNumber(totalBeds)} detail={`di ${recommendations.length} fasilitas`} tone="blue" />
+        <MetricCard icon={Clock3} label="Rata-rata tunggu" value={hasAvailabilityData ? `${averageWait} mnt` : "—"} detail={hasAvailabilityData ? "dari hasil tersedia" : "belum tersedia dari MSI"} tone="yellow" />
+        <MetricCard icon={BedDouble} label="Bed tersedia hari ini" value={hasAvailabilityData ? formatNumber(totalBeds) : "—"} detail={hasAvailabilityData ? `di ${recommendations.length} fasilitas` : "belum tersedia dari MSI"} tone="blue" />
         <MetricCard icon={Navigation} label="Jangkauan pencarian" value={`${filters.maxDistanceKm} km`} detail="dari lokasi Anda" tone="coral" />
       </div>
       <div className="content-grid content-grid--primary">
