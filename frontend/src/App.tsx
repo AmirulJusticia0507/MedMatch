@@ -175,14 +175,16 @@ function App() {
     const location = indonesiaLocations.find((item) => getLocationLabel(item) === label);
     if (!location) return;
     const codes = getLocationCodes(label);
-    setLocationLabel(label);
-    setFilters((current) => ({
-      ...current,
+    const nextFilters = {
+      ...filters,
       latitude: location.latitude,
       longitude: location.longitude,
       provinceCode: codes?.provinceCode,
       cityCode: codes?.cityCode
-    }));
+    };
+    setLocationLabel(label);
+    setFilters(nextFilters);
+    void loadRecommendations(nextFilters);
   };
 
   const handleQuickSearch = (code: string) => {

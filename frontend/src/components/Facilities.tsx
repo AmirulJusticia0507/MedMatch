@@ -46,6 +46,11 @@ export function FacilitiesTable({ recommendations, onSelect }: FacilitiesTablePr
                 <td><button className="row-action" onClick={() => onSelect(hospital)} aria-label={`Lihat detail ${hospital.hospitalName}`}><ChevronRight size={17} /></button></td>
               </tr>;
             })}
+            {recommendations.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="facility-table__empty">Belum ada fasilitas terdekat untuk lokasi ini.</td>
+              </tr>
+            ) : null}
           </tbody>
         </table>
       </div>

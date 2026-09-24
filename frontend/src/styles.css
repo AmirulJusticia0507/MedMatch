@@ -3253,3 +3253,23 @@ strong,
     padding: 20px 17px 15px;
   }
 }
+.results-empty {
+  grid-column: 1 / -1;
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.results-empty strong {
+  color: var(--ink);
+}
+
+.facility-table__empty {
+  padding: 32px 16px !important;
+  color: var(--ink-soft);
+  text-align: center;
+}

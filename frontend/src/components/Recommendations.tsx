@@ -353,6 +353,13 @@ export function OverviewView({
                 onSelect={onSelectHospital}
               />
             ))}
+            {!isRefreshing && recommendations.length === 0 ? (
+              <div className="results-empty">
+                <Building2 size={24} />
+                <strong>Belum ada fasilitas ditemukan</strong>
+                <span>Pilih kota lain atau perluas jangkauan pencarian.</span>
+              </div>
+            ) : null}
           </div>
         </section>
         <CapacityMap recommendations={recommendations} filters={filters} locationLabel={locationLabel} selectedHospitalId={selectedHospitalId} onSelect={onSelectHospital} />
