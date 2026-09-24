@@ -188,11 +188,11 @@ export default function AccountView({ session, onAuthenticated, onLogout, onBack
   if (session) {
     const initials = session.fullName.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase();
     return (
-      <section className="mx-auto w-full max-w-5xl py-5 md:py-9">
+      <section className="w-full py-5 md:py-9">
         <button className="mb-6 inline-flex items-center gap-2 bg-transparent text-sm font-semibold text-slate-500 hover:text-ink" onClick={onBack}>
           <ArrowLeft size={17} /> Kembali ke ringkasan
         </button>
-        <div className="grid overflow-hidden rounded-md border border-emerald-100 bg-white shadow-soft lg:grid-cols-[280px_1fr]">
+        <div className="grid min-h-[calc(100vh-210px)] overflow-hidden rounded-md border border-emerald-100 bg-white shadow-soft lg:grid-cols-[320px_1fr]">
           <aside className="bg-ink p-8 text-white">
             <div className="grid h-20 w-20 place-items-center rounded-full bg-emerald-200 text-2xl font-bold text-ink">{initials}</div>
             <h1 className="mt-5 text-xl font-bold">{session.fullName}</h1>
