@@ -12,14 +12,14 @@ public class Hospital
     public string? Email { get; set; }
     public HospitalType Type { get; set; }
     public HospitalStatus Status { get; set; }
-    public List<Specialty> Specialties { get; set; } = new();
-    public List<BedCapacity> BedCapacities { get; set; } = new();
-    public QueueInfo? CurrentQueue { get; set; }
+    public List<HospitalSpecialty> Specialties { get; set; } = new();
+    public List<HospitalBedCapacity> BedCapacities { get; set; } = new();
+    public HospitalQueueInfo? CurrentQueue { get; set; }
     public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
     public bool IsActive { get; set; } = true;
 
     public bool HasSpecialty(string specialtyCode)
-        => Specialties.Any(s => s.Code.Equals(specialtyCode, StringComparison.OrdinalIgnoreCase));
+        => Specialties.Any(s => s.SpecialtyCode.Equals(specialtyCode, StringComparison.OrdinalIgnoreCase));
 
     public int GetAvailableBeds(string bedClass)
     {
@@ -28,6 +28,38 @@ public class Hospital
     }
 
     public int CurrentQueueCount => CurrentQueue?.CurrentLength ?? 0;
+}
+
+public class HospitalSpecialty
+{
+    public string HospitalId { get; set; } = string.Empty;
+    public string SpecialtyCode { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public SpecialtyCategory Category { get; set; }
+}
+
+public class HospitalBedCapacity
+{
+    public string HospitalId { get; set; } = string.Empty;
+    public string Class { get; set; } = string.Empty;
+    public int Total { get; set; }
+    public int Occupied { get; set; }
+    public int Available => Total - Occupied;
+    public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
+}
+
+public class HospitalQueueInfo
+{
+    public string HospitalId { get; set; } = string.Empty;
+    public string SpecialtyCode { get; set; } = string.Empty;
+    public int CurrentLength { get; set; }
+    public int CurrentServingNumber { get; set; }
+    public int EstimatedWaitMinutes { get; set; }
+    public double ServingVelocityPerHour { get; set; }
+    public int DoctorQuota { get; set; }
+    public int DoctorsOnDuty { get; set; }
+    public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
+    public QueueStatus Status { get; set; }
 }
 
 public enum HospitalType

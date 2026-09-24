@@ -1,5 +1,7 @@
 namespace MedMatch.Core.DTOs;
 
+using MedMatch.Core.Models;
+
 public class HospitalRecommendationDto
 {
     public string HospitalId { get; set; } = string.Empty;

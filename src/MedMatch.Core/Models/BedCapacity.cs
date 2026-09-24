@@ -2,6 +2,7 @@ namespace MedMatch.Core.Models;
 
 public class BedCapacity
 {
+    public string HospitalId { get; set; } = string.Empty;
     public string Class { get; set; } = string.Empty;
     public int Total { get; set; }
     public int Occupied { get; set; }
