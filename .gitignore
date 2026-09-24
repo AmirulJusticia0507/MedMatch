@@ -1,0 +1,36 @@
+# Build outputs
+bin/
+obj/
+
+# IDE/Editor
+.vs/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# NuGet
+packages/
+*.nupkg
+
+# Logs
+*.log
+
+# Database
+*.db
+*.sqlite
+
+# Environment
+.env
+*.local
+
+# Test results
+TestResults/
+*.trx
+
+# Coverage
+coverage/
+*.coverage
