@@ -1,7 +1,9 @@
 import type {
   ApiErrorPayload,
+  AuthResponse,
   ChatMessage,
   ChatResponse,
+  ForgotPasswordResponse,
   HospitalRecommendation,
   RecommendationFilters,
   SpecialtyOption
@@ -71,6 +73,34 @@ function normalizeRecommendation(value: HospitalRecommendation): HospitalRecomme
 }
 
 export const medmatchApi = {
+  signUp(email: string, password: string, fullName: string): Promise<AuthResponse> {
+    return request<AuthResponse>("/api/auth/signup", {
+      method: "POST",
+      body: JSON.stringify({ email, password, fullName })
+    });
+  },
+
+  login(email: string, password: string): Promise<AuthResponse> {
+    return request<AuthResponse>("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password })
+    });
+  },
+
+  forgotPassword(email: string): Promise<ForgotPasswordResponse> {
+    return request<ForgotPasswordResponse>("/api/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email })
+    });
+  },
+
+  resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+    return request<{ message: string }>("/api/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, newPassword })
+    });
+  },
+
   async getRecommendations(filters: RecommendationFilters, signal?: AbortSignal): Promise<HospitalRecommendation[]> {
     const params = new URLSearchParams({
       latitude: String(filters.latitude),

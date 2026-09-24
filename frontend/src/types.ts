@@ -56,3 +56,20 @@ export interface ApiErrorPayload {
 }
 
 export type DataSource = "live" | "demo";
+
+export interface AuthUser {
+  userId: string;
+  email: string;
+  fullName: string;
+  role: string;
+}
+
+export interface AuthResponse extends AuthUser {
+  token: string;
+  expiresAt: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+  resetToken?: string | null;
+}
