@@ -248,9 +248,11 @@ public sealed class SatuSehatMsiClient : ISatuSehatMsiClient
     private sealed class MsiFacilityData
     {
         [JsonPropertyName("kode_satusehat")]
+        [JsonConverter(typeof(FlexibleStringConverter))]
         public string KodeSatusehat { get; set; } = string.Empty;
 
         [JsonPropertyName("kode_sarana")]
+        [JsonConverter(typeof(FlexibleStringConverter))]
         public string KodeSarana { get; set; } = string.Empty;
 
         [JsonPropertyName("nama")]
@@ -302,6 +304,7 @@ public sealed class SatuSehatMsiClient : ISatuSehatMsiClient
     private sealed class MsiRegion
     {
         [JsonPropertyName("kode")]
+        [JsonConverter(typeof(FlexibleStringConverter))]
         public string Kode { get; set; } = string.Empty;
 
         [JsonPropertyName("nama")]
@@ -311,9 +314,25 @@ public sealed class SatuSehatMsiClient : ISatuSehatMsiClient
     private sealed class MsiNamedCode
     {
         [JsonPropertyName("kode")]
+        [JsonConverter(typeof(FlexibleStringConverter))]
         public string Kode { get; set; } = string.Empty;
 
         [JsonPropertyName("nama")]
         public string Nama { get; set; } = string.Empty;
+    }
+
+    private sealed class FlexibleStringConverter : JsonConverter<string>
+    {
+        public override string? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
+            reader.TokenType switch
+            {
+                JsonTokenType.String => reader.GetString(),
+                JsonTokenType.Number => reader.GetDouble().ToString(CultureInfo.InvariantCulture),
+                JsonTokenType.Null => null,
+                _ => throw new JsonException("Expected a string or number value.")
+            };
+
+        public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options) =>
+            writer.WriteStringValue(value);
     }
 }
