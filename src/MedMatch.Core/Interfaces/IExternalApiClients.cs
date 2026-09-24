@@ -31,3 +31,9 @@ public interface IRecommendationEngine
     Task<List<HospitalRecommendationDto>> GetTopRecommendationsAsync(
         double userLat, double userLng, string specialtyCode, string bedClass, int maxResults = 5);
 }
+
+public interface IChatAiClient
+{
+    Task<ChatResponseDto> ChatAsync(ChatRequestDto request, CancellationToken cancellationToken = default);
+    Task<bool> TestConnectionAsync();
+}

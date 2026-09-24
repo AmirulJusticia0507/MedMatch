@@ -2,6 +2,11 @@
 bin/
 obj/
 
+# Frontend
+node_modules/
+frontend/dist/
+frontend/*.local
+
 # IDE/Editor
 .vs/
 .vscode/

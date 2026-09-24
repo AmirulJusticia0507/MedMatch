@@ -41,6 +41,18 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    public static IServiceCollection AddChatAi(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<BazaarLinkOptions>(configuration.GetSection("ExternalApis:BazaarLink"));
+
+        services.AddHttpClient<IChatAiClient, BazaarLinkChatClient>()
+            .AddPolicyHandler(Polly.Policy<HttpResponseMessage>
+                .Handle<HttpRequestException>()
+                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))));
+
+        return services;
+    }
+
     private static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
     {
         return Polly.Policy<HttpResponseMessage>

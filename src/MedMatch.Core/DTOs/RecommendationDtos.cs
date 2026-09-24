@@ -18,6 +18,9 @@ public class HospitalRecommendationDto
     public HospitalType HospitalType { get; set; }
     public string Address { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
+    public DateTime LastUpdated { get; set; }
 }
 
 public class RecommendationRequestDto

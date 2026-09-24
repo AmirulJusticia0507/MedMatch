@@ -82,7 +82,10 @@ public class RecommendationEngine : IRecommendationEngine
                     SpecialtyName = hospital.Specialties.FirstOrDefault(s => s.SpecialtyCode == request.SpecialtyCode)?.Name ?? string.Empty,
                     HospitalType = hospital.Type,
                     Address = hospital.Address,
-                    Phone = hospital.Phone
+                    Phone = hospital.Phone,
+                    Latitude = hospital.Latitude,
+                    Longitude = hospital.Longitude,
+                    LastUpdated = DateTime.UtcNow
                 };
 
                 results.Add(dto);
