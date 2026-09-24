@@ -2,13 +2,14 @@ import type { FormEvent } from "react";
 import { Activity, ArrowRight, BedDouble, Building2, Check, ChevronDown, Clock3, Cross, Filter, Info, LocateFixed, MapPin, MoreHorizontal, Navigation, RefreshCw, Search, SlidersHorizontal, Sparkles, Stethoscope, X, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { bedClassOptions } from "../data/mockData";
+import { getLocationLabel, indonesiaLocations } from "../data/indonesiaLocations";
 import type { DataSource, HospitalRecommendation, RecommendationFilters, SpecialtyOption } from "../types";
 import { FacilitiesTable } from "./Facilities";
 
 type FilterKey = "specialtyCode" | "bedClass";
 
 interface RecommendationCardProps { hospital: HospitalRecommendation; rank: number; selected: boolean; onSelect: (hospital: HospitalRecommendation) => void; }
-interface CapacityMapProps { recommendations: HospitalRecommendation[]; selectedHospitalId: string | null; onSelect: (hospital: HospitalRecommendation) => void; }
+interface CapacityMapProps { recommendations: HospitalRecommendation[]; locationLabel: string; selectedHospitalId: string | null; onSelect: (hospital: HospitalRecommendation) => void; }
 interface SearchHeroProps {
   filters: RecommendationFilters; specialties: SpecialtyOption[]; locationLabel: string; isRefreshing: boolean; isLocating: boolean;
   dataSource: DataSource; notice: string; noticeVisible: boolean; onFilterChange: (key: FilterKey, value: string) => void;
@@ -94,7 +95,14 @@ function SearchHero({
           <span className="search-field__label">Lokasi pasien</span>
           <span className="search-field__control">
             <MapPin size={17} />
-            <input value={locationLabel} onChange={(event) => onLocationChange(event.target.value)} aria-label="Lokasi pasien" />
+            <select value={locationLabel} onChange={(event) => onLocationChange(event.target.value)} aria-label="Lokasi pasien">
+              {!indonesiaLocations.some((location) => getLocationLabel(location) === locationLabel) ? <option value={locationLabel}>{locationLabel}</option> : null}
+              {indonesiaLocations.map((location) => {
+                const label = getLocationLabel(location);
+                return <option key={label} value={label}>{label}</option>;
+              })}
+            </select>
+            <ChevronDown size={16} />
             <button type="button" className="locate-button" onClick={onLocate} aria-label="Gunakan lokasi saat ini">
               {isLocating ? <RefreshCw size={16} className="is-spinning" /> : <LocateFixed size={16} />}
             </button>
@@ -228,7 +236,7 @@ function RecommendationCard({ hospital, rank, selected, onSelect }: Recommendati
   );
 }
 
-function CapacityMap({ recommendations, selectedHospitalId, onSelect }: CapacityMapProps) {
+function CapacityMap({ recommendations, locationLabel, selectedHospitalId, onSelect }: CapacityMapProps) {
   const visibleHospitals = recommendations.slice(0, 5);
   const availableBeds = recommendations.reduce((total, hospital) => total + hospital.availableBeds, 0);
   const averageQueue = recommendations.length
@@ -265,9 +273,7 @@ function CapacityMap({ recommendations, selectedHospitalId, onSelect }: Capacity
           <circle cx="145" cy="210" r="27" fill="rgba(86,180,155,.12)" />
           <circle cx="145" cy="210" r="8" fill="rgba(86,180,155,.22)" />
         </svg>
-        <span className="map-label map-label--north">JAKARTA PUSAT</span>
-        <span className="map-label map-label--south">JAKARTA SELATAN</span>
-        <span className="map-label map-label--east">JAKARTA TIMUR</span>
+        <span className="map-label map-label--north">{locationLabel.toUpperCase()}</span>
         <span className="map-you"><span /> Lokasi Anda</span>
         {visibleHospitals.map((hospital, index) => {
           const position = mapMarkerPositions[index];
@@ -327,6 +333,11 @@ export function OverviewView({
   onSearch: (event: FormEvent<HTMLFormElement>) => void;
   onSelectHospital: (hospital: HospitalRecommendation) => void;
 }) {
+  const totalBeds = recommendations.reduce((total, hospital) => total + hospital.availableBeds, 0);
+  const averageWait = recommendations.length
+    ? Math.round(recommendations.reduce((total, hospital) => total + hospital.estimatedWaitMinutes, 0) / recommendations.length)
+    : 0;
+
   return (
     <>
       <SearchHero
@@ -346,10 +357,10 @@ export function OverviewView({
         onDismissNotice={onDismissNotice}
       />
       <div className="metrics-grid">
-        <MetricCard icon={Building2} label="Fasilitas tersedia" value="128" detail="di sekitar lokasi" tone="mint" trend="+12% " />
-        <MetricCard icon={Clock3} label="Rata-rata tunggu" value="18 mnt" detail="dibanding 24 mnt" tone="yellow" trend="−25% " />
-        <MetricCard icon={BedDouble} label="Bed tersedia hari ini" value="342" detail="di 46 fasilitas" tone="blue" />
-        <MetricCard icon={Navigation} label="Jangkauan pencarian" value="25 km" detail="dari lokasi Anda" tone="coral" />
+        <MetricCard icon={Building2} label="Fasilitas tersedia" value={String(recommendations.length)} detail="hasil terverifikasi" tone="mint" />
+        <MetricCard icon={Clock3} label="Rata-rata tunggu" value={`${averageWait} mnt`} detail="dari hasil tersedia" tone="yellow" />
+        <MetricCard icon={BedDouble} label="Bed tersedia hari ini" value={formatNumber(totalBeds)} detail={`di ${recommendations.length} fasilitas`} tone="blue" />
+        <MetricCard icon={Navigation} label="Jangkauan pencarian" value={`${filters.maxDistanceKm} km`} detail="dari lokasi Anda" tone="coral" />
       </div>
       <div className="content-grid content-grid--primary">
         <section className="panel recommendations-panel">
@@ -358,7 +369,7 @@ export function OverviewView({
               <span className="panel-heading__eyebrow">Best match untuk Anda</span>
               <h2>Rekomendasi terbaik</h2>
             </div>
-            <button className="panel-heading__link" onClick={() => onSelectHospital(recommendations[0])}>Lihat detail <ArrowRight size={14} /></button>
+            {recommendations[0] ? <button className="panel-heading__link" onClick={() => onSelectHospital(recommendations[0])}>Lihat detail <ArrowRight size={14} /></button> : null}
           </div>
           <div className="recommendation-grid">
             {recommendations.slice(0, 3).map((hospital, index) => (
@@ -372,7 +383,7 @@ export function OverviewView({
             ))}
           </div>
         </section>
-        <CapacityMap recommendations={recommendations} selectedHospitalId={selectedHospitalId} onSelect={onSelectHospital} />
+        <CapacityMap recommendations={recommendations} locationLabel={locationLabel} selectedHospitalId={selectedHospitalId} onSelect={onSelectHospital} />
       </div>
       <div className="content-grid content-grid--secondary">
         <FacilitiesTable recommendations={recommendations} onSelect={onSelectHospital} />
@@ -383,7 +394,7 @@ export function OverviewView({
             <span className="insight-panel__label"><Zap size={14} /> Insight MedMatch</span>
             <h2>Rute yang lebih baik<br />dimulai dari data.</h2>
             <p>Algoritma kami memperhitungkan 4 faktor agar pasien tidak hanyauhn sampai, tetapi juga mendapat layanan lebih cepat.</p>
-            <button className="button button--light" onClick={() => onSelectHospital(recommendations[0])}>Pelajari cara kerja <ArrowRight size={15} /></button>
+            {recommendations[0] ? <button className="button button--light" onClick={() => onSelectHospital(recommendations[0])}>Pelajari cara kerja <ArrowRight size={15} /></button> : null}
           </div>
           <div className="insight-panel__rings"><span /><span /><span /></div>
         </section>

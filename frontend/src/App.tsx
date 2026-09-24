@@ -8,6 +8,7 @@ import { Sidebar, Topbar, viewTitles, type ViewId } from "./components/Layout";
 import { OverviewView, RecommendationsView } from "./components/Recommendations";
 import { medmatchApi } from "./api/medmatch";
 import { initialChatMessages, mockRecommendations, specialtyOptions } from "./data/mockData";
+import { getLocationLabel, indonesiaLocations } from "./data/indonesiaLocations";
 import type { AuthResponse, ChatMessage, DataSource, HospitalRecommendation, RecommendationFilters, SpecialtyOption } from "./types";
 
 type FilterKey = "specialtyCode" | "bedClass";
@@ -67,7 +68,7 @@ function App() {
     }
   });
   const [filters, setFilters] = useState<RecommendationFilters>(defaultFilters);
-  const [locationLabel, setLocationLabel] = useState("Jakarta Pusat");
+  const [locationLabel, setLocationLabel] = useState("Jakarta Pusat, DKI Jakarta");
   const [specialties, setSpecialties] = useState<SpecialtyOption[]>(specialtyOptions);
   const [recommendations, setRecommendations] = useState<HospitalRecommendation[]>(mockRecommendations);
   const [dataSource, setDataSource] = useState<DataSource>("demo");
@@ -77,6 +78,7 @@ function App() {
   const [noticeVisible, setNoticeVisible] = useState(true);
   const [selectedHospital, setSelectedHospital] = useState<HospitalRecommendation | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => localStorage.getItem("medmatch-sidebar-collapsed") === "true");
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(initialChatMessages);
   const [chatInput, setChatInput] = useState("");
@@ -94,15 +96,19 @@ function App() {
         setDataSource("live");
         setNotice("Data berhasil diperbarui dari MedMatch API.");
       } else {
-        setRecommendations(getMockResults(nextFilters));
-        setDataSource("demo");
-        setNotice("API aktif tetapi belum ada data yang cocok. Menampilkan pratinjau data simulasi.");
+        setRecommendations([]);
+        setDataSource("live");
+        setNotice("Belum ada data fasilitas terverifikasi untuk lokasi dan filter ini.");
       }
     } catch (error) {
       if (isAbortError(error)) return;
-      setRecommendations(getMockResults(nextFilters));
+      const isJakarta = nextFilters.latitude >= -6.5 && nextFilters.latitude <= -5.9
+        && nextFilters.longitude >= 106.5 && nextFilters.longitude <= 107.1;
+      setRecommendations(isJakarta ? getMockResults(nextFilters) : []);
       setDataSource("demo");
-      setNotice("API belum dapat diakses. Menampilkan data simulasi agar pencarian tetap dapat dicoba.");
+      setNotice(isJakarta
+        ? "API belum dapat diakses. Menampilkan data simulasi Jakarta."
+        : "API belum dapat diakses dan data simulasi tidak tersedia untuk lokasi ini.");
     } finally {
       if (!signal?.aborted) setIsRefreshing(false);
     }
@@ -138,6 +144,13 @@ function App() {
     setIsMobileMenuOpen(false);
   };
 
+  const handleToggleSidebar = () => {
+    setIsSidebarCollapsed((current) => {
+      localStorage.setItem("medmatch-sidebar-collapsed", String(!current));
+      return !current;
+    });
+  };
+
   const handleAuthenticated = (session: AuthResponse) => {
     sessionStorage.setItem("medmatch-auth", JSON.stringify(session));
     setAuthSession(session);
@@ -152,6 +165,13 @@ function App() {
 
   const handleFilterChange = (key: FilterKey, value: string) => {
     setFilters((current) => ({ ...current, [key]: value }));
+  };
+
+  const handleLocationChange = (label: string) => {
+    const location = indonesiaLocations.find((item) => getLocationLabel(item) === label);
+    if (!location) return;
+    setLocationLabel(label);
+    setFilters((current) => ({ ...current, latitude: location.latitude, longitude: location.longitude }));
   };
 
   const handleQuickSearch = (code: string) => {
@@ -243,7 +263,7 @@ function App() {
       recommendations={recommendations}
       selectedHospitalId={selectedHospital?.hospitalId ?? null}
       onFilterChange={handleFilterChange}
-      onLocationChange={setLocationLabel}
+      onLocationChange={handleLocationChange}
       onSearch={handleSearch}
       onSubmit={handleSearch}
       onLocate={handleLocate}
@@ -264,7 +284,7 @@ function App() {
       recommendations={recommendations}
       selectedHospitalId={selectedHospital?.hospitalId ?? null}
       onFilterChange={handleFilterChange}
-      onLocationChange={setLocationLabel}
+      onLocationChange={handleLocationChange}
       onSearch={handleSearch}
       onSubmit={handleSearch}
       onLocate={handleLocate}
@@ -282,9 +302,9 @@ function App() {
 
   return (
     <div className="app-shell">
-      <Sidebar activeView={activeView} session={authSession} isOpen={isMobileMenuOpen} onNavigate={handleNavigate} onLogout={handleLogout} onClose={() => setIsMobileMenuOpen(false)} />
+      <Sidebar activeView={activeView} session={authSession} isOpen={isMobileMenuOpen} isCollapsed={isSidebarCollapsed} onNavigate={handleNavigate} onLogout={handleLogout} onToggleCollapse={handleToggleSidebar} onClose={() => setIsMobileMenuOpen(false)} />
       {isMobileMenuOpen ? <button className="sidebar-scrim" onClick={() => setIsMobileMenuOpen(false)} aria-label="Tutup menu" /> : null}
-      <div className="main-shell">
+      <div className={`main-shell ${isSidebarCollapsed ? "main-shell--sidebar-collapsed" : ""}`}>
         <Topbar title={viewTitles[activeView]} dataSource={dataSource} isRefreshing={isRefreshing} onMenu={() => setIsMobileMenuOpen(true)} onRefresh={handleRefresh} onAccount={() => handleNavigate("account")} />
         <main className="page-content">
           {activeView !== "account" ? <div className="page-content__context"><span>Senang bertemu kembali, {authSession?.fullName.split(" ")[0] ?? "Anda"}</span><span className="page-content__specialty">Pencarian aktif · {currentSpecialty}</span></div> : null}

@@ -1,4 +1,4 @@
-import { ArrowRight, Bell, Bot, Building2, CalendarDays, ChevronDown, ChevronRight, CircleHelp, Cross, LayoutDashboard, LogOut, Menu, RefreshCw, Settings, ShieldCheck, Sparkles, UserRound, X } from "lucide-react";
+import { ArrowRight, Bell, Bot, Building2, CalendarDays, ChevronDown, ChevronRight, CircleHelp, Cross, LayoutDashboard, LogOut, Menu, PanelLeftClose, PanelLeftOpen, RefreshCw, Settings, ShieldCheck, Sparkles, UserRound, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { AuthResponse, DataSource } from "../types";
 
@@ -39,21 +39,28 @@ export function Sidebar({
   activeView,
   session,
   isOpen,
+  isCollapsed,
   onNavigate,
   onLogout,
+  onToggleCollapse,
   onClose
 }: {
   activeView: ViewId;
   session: AuthResponse | null;
   isOpen: boolean;
+  isCollapsed: boolean;
   onNavigate: (view: ViewId) => void;
   onLogout: () => void;
+  onToggleCollapse: () => void;
   onClose: () => void;
 }) {
   return (
-    <aside className={`sidebar ${isOpen ? "sidebar--open" : ""}`}>
+    <aside className={`sidebar ${isOpen ? "sidebar--open" : ""} ${isCollapsed ? "sidebar--collapsed" : ""}`}>
       <div className="sidebar__header">
         <BrandMark />
+        <button className="icon-button sidebar__collapse" onClick={onToggleCollapse} aria-label={isCollapsed ? "Tampilkan sidebar" : "Sembunyikan sidebar"} title={isCollapsed ? "Tampilkan sidebar" : "Sembunyikan sidebar"}>
+          {isCollapsed ? <PanelLeftOpen size={19} /> : <PanelLeftClose size={19} />}
+        </button>
         <button className="icon-button sidebar__close" onClick={onClose} aria-label="Tutup menu">
           <X size={19} />
         </button>
@@ -78,6 +85,7 @@ export function Sidebar({
               className={`sidebar__nav-item ${isActive ? "is-active" : ""}`}
               key={item.id}
               onClick={() => onNavigate(item.id)}
+              title={isCollapsed ? item.label : undefined}
             >
               <Icon size={18} strokeWidth={isActive ? 2.4 : 1.9} />
               <span>{item.label}</span>
@@ -89,15 +97,15 @@ export function Sidebar({
 
       <div className="sidebar__section-label sidebar__section-label--secondary">Pengaturan</div>
       <nav className="sidebar__nav" aria-label="Pengaturan">
-        <button className="sidebar__nav-item" onClick={() => onNavigate("account")}>
+        <button className="sidebar__nav-item" onClick={() => onNavigate("account")} title={isCollapsed ? "Preferensi" : undefined}>
           <Settings size={18} />
           <span>Preferensi</span>
         </button>
-        <button className="sidebar__nav-item" onClick={() => onNavigate("assistant")}>
+        <button className="sidebar__nav-item" onClick={() => onNavigate("assistant")} title={isCollapsed ? "Pusat bantuan" : undefined}>
           <CircleHelp size={18} />
           <span>Pusat bantuan</span>
         </button>
-        {session ? <button className="sidebar__nav-item" onClick={onLogout}><LogOut size={18} /><span>Keluar</span></button> : null}
+        {session ? <button className="sidebar__nav-item" onClick={onLogout} title={isCollapsed ? "Keluar" : undefined}><LogOut size={18} /><span>Keluar</span></button> : null}
       </nav>
 
       <div className="sidebar__spacer" />
