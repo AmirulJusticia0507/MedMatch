@@ -1,0 +1,16 @@
+C:\laragon\www\MedMatch\src\MedMatch.Recommendation\bin\Debug\net8.0\MedMatch.Recommendation.deps.json
+C:\laragon\www\MedMatch\src\MedMatch.Recommendation\bin\Debug\net8.0\MedMatch.Recommendation.dll
+C:\laragon\www\MedMatch\src\MedMatch.Recommendation\bin\Debug\net8.0\MedMatch.Recommendation.pdb
+C:\laragon\www\MedMatch\src\MedMatch.Recommendation\bin\Debug\net8.0\MedMatch.Core.dll
+C:\laragon\www\MedMatch\src\MedMatch.Recommendation\bin\Debug\net8.0\MedMatch.Core.pdb
+C:\laragon\www\MedMatch\src\MedMatch.Recommendation\obj\Debug\net8.0\MedMatch.Recommendation.csproj.AssemblyReference.cache
+C:\laragon\www\MedMatch\src\MedMatch.Recommendation\obj\Debug\net8.0\MedMatch.Recommendation.GeneratedMSBuildEditorConfig.editorconfig
+C:\laragon\www\MedMatch\src\MedMatch.Recommendation\obj\Debug\net8.0\MedMatch.Recommendation.AssemblyInfoInputs.cache
+C:\laragon\www\MedMatch\src\MedMatch.Recommendation\obj\Debug\net8.0\MedMatch.Recommendation.AssemblyInfo.cs
+C:\laragon\www\MedMatch\src\MedMatch.Recommendation\obj\Debug\net8.0\MedMatch.Recommendation.csproj.CoreCompileInputs.cache
+C:\laragon\www\MedMatch\src\MedMatch.Recommendation\obj\Debug\net8.0\MedMatch.Recommendation.sourcelink.json
+C:\laragon\www\MedMatch\src\MedMatch.Recommendation\obj\Debug\net8.0\MedMatch.E609D796.Up2Date
+C:\laragon\www\MedMatch\src\MedMatch.Recommendation\obj\Debug\net8.0\MedMatch.Recommendation.dll
+C:\laragon\www\MedMatch\src\MedMatch.Recommendation\obj\Debug\net8.0\refint\MedMatch.Recommendation.dll
+C:\laragon\www\MedMatch\src\MedMatch.Recommendation\obj\Debug\net8.0\MedMatch.Recommendation.pdb
+C:\laragon\www\MedMatch\src\MedMatch.Recommendation\obj\Debug\net8.0\ref\MedMatch.Recommendation.dll
