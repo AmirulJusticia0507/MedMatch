@@ -23,3 +23,16 @@ public class PasswordResetToken
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public UserAccount User { get; set; } = null!;
 }
+
+public class BiometricCredential
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid UserId { get; set; }
+    public string CredentialId { get; set; } = string.Empty;
+    public byte[] PublicKey { get; set; } = Array.Empty<byte>();
+    public uint SignCount { get; set; }
+    public string Label { get; set; } = "Sidik jari";
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? LastUsedAt { get; set; }
+    public UserAccount? User { get; set; }
+}

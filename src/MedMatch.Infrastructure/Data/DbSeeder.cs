@@ -35,6 +35,21 @@ public static class DbSeeder
                 ON "PasswordResetTokens" ("TokenHash");
             CREATE INDEX IF NOT EXISTS "IX_PasswordResetTokens_UserId_ExpiresAt"
                 ON "PasswordResetTokens" ("UserId", "ExpiresAt");
+
+            CREATE TABLE IF NOT EXISTS "BiometricCredentials" (
+                "Id" uuid PRIMARY KEY,
+                "UserId" uuid NOT NULL REFERENCES "Users" ("Id") ON DELETE CASCADE,
+                "CredentialId" varchar(500) NOT NULL,
+                "PublicKey" bytea NOT NULL,
+                "SignCount" bigint NOT NULL,
+                "Label" varchar(100) NOT NULL,
+                "CreatedAt" timestamp with time zone NOT NULL,
+                "LastUsedAt" timestamp with time zone
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS "IX_BiometricCredentials_CredentialId"
+                ON "BiometricCredentials" ("CredentialId");
+            CREATE INDEX IF NOT EXISTS "IX_BiometricCredentials_UserId"
+                ON "BiometricCredentials" ("UserId");
             """);
 
         if (await db.Hospitals.AnyAsync())

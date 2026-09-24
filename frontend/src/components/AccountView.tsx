@@ -1,10 +1,11 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
   Eye,
   EyeOff,
+  Fingerprint,
   HeartPulse,
   KeyRound,
   LockKeyhole,
@@ -14,6 +15,14 @@ import {
   UserRound
 } from "lucide-react";
 import { ApiError, medmatchApi } from "../api/medmatch";
+import {
+  deleteBiometric,
+  getBiometricStatus,
+  isBiometricAvailable,
+  loginWithBiometric,
+  registerBiometric,
+  type BiometricStatusResponse
+} from "../api/webauthn";
 import type { AuthResponse } from "../types";
 
 type AuthMode = "login" | "signup" | "forgot" | "reset";
@@ -38,6 +47,105 @@ export default function AccountView({ session, onAuthenticated, onLogout, onBack
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricStatus, setBiometricStatus] = useState<BiometricStatusResponse | null>(null);
+  const [biometricBusy, setBiometricBusy] = useState(false);
+  const [biometricMessage, setBiometricMessage] = useState("");
+  const [biometricError, setBiometricError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    isBiometricAvailable().then((available) => {
+      if (!cancelled) {
+        setBiometricAvailable(available);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!session) {
+      setBiometricStatus(null);
+      return;
+    }
+
+    let cancelled = false;
+    getBiometricStatus(session.token)
+      .then((status) => {
+        if (!cancelled) {
+          setBiometricStatus(status);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setBiometricStatus(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session]);
+
+  const refreshBiometricStatus = async (token: string) => {
+    try {
+      setBiometricStatus(await getBiometricStatus(token));
+    } catch {
+      setBiometricStatus(null);
+    }
+  };
+
+  const handleRegisterBiometric = async () => {
+    if (!session || biometricBusy) return;
+    setBiometricBusy(true);
+    setBiometricError("");
+    setBiometricMessage("");
+    try {
+      await registerBiometric(session.token);
+      await refreshBiometricStatus(session.token);
+      setBiometricMessage("Sidik jari berhasil didaftarkan.");
+    } catch (caught) {
+      setBiometricError(caught instanceof ApiError ? caught.message : "Pendaftaran sidik jari gagal.");
+    } finally {
+      setBiometricBusy(false);
+    }
+  };
+
+  const handleDeleteBiometric = async (credentialId: string) => {
+    if (!session || biometricBusy) return;
+    setBiometricBusy(true);
+    setBiometricError("");
+    setBiometricMessage("");
+    try {
+      await deleteBiometric(session.token, credentialId);
+      await refreshBiometricStatus(session.token);
+      setBiometricMessage("Sidik jari dihapus.");
+    } catch (caught) {
+      setBiometricError(caught instanceof ApiError ? caught.message : "Gagal menghapus sidik jari.");
+    } finally {
+      setBiometricBusy(false);
+    }
+  };
+
+  const handleBiometricLogin = async () => {
+    if (biometricBusy) return;
+    setError("");
+    setMessage("");
+    if (!email.trim()) {
+      setError("Isi email terlebih dahulu untuk login dengan sidik jari.");
+      return;
+    }
+    setBiometricBusy(true);
+    try {
+      onAuthenticated(await loginWithBiometric(email));
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : "Login sidik jari gagal. Silakan coba lagi.");
+    } finally {
+      setBiometricBusy(false);
+    }
+  };
 
   const changeMode = (nextMode: AuthMode) => {
     setMode(nextMode);
@@ -99,6 +207,48 @@ export default function AccountView({ session, onAuthenticated, onLogout, onBack
               <div className="rounded-md border border-slate-200 p-5"><Mail className="text-brand" size={20} /><span className="mt-3 block text-xs text-slate-500">Alamat email</span><strong className="mt-1 block break-all text-sm text-slate-800">{session.email}</strong></div>
             </div>
             <div className="mt-6 flex items-center gap-3 rounded-md bg-emerald-50 p-4 text-sm text-emerald-900"><ShieldCheck size={20} /><span>Sesi aktif dan dilindungi token autentikasi.</span></div>
+            {biometricAvailable ? (
+              <div className="mt-6 rounded-md border border-slate-200 p-5">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <span className="inline-flex items-center gap-2 text-sm font-bold text-ink"><Fingerprint size={18} className="text-brand" /> Login sidik jari</span>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">Gunakan sidik jari perangkat untuk masuk tanpa kata sandi.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRegisterBiometric}
+                    disabled={biometricBusy || (biometricStatus?.credentials.length ?? 0) >= 5}
+                    className="inline-flex h-10 items-center gap-2 rounded-md bg-ink px-4 text-xs font-bold text-white transition hover:bg-emerald-900 disabled:opacity-60"
+                  >
+                    <Fingerprint size={16} /> {biometricStatus?.enabled ? "Daftarkan lagi" : "Aktifkan sidik jari"}
+                  </button>
+                </div>
+                {biometricStatus?.credentials.length ? (
+                  <ul className="mt-4 divide-y divide-slate-100">
+                    {biometricStatus.credentials.map((credential) => (
+                      <li key={credential.id} className="flex items-center justify-between gap-3 py-3">
+                        <span className="text-sm text-slate-700">{credential.label}</span>
+                        <span className="flex items-center gap-3">
+                          <span className="text-xs text-slate-400">{new Date(credential.createdAt).toLocaleDateString("id-ID")}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteBiometric(credential.id)}
+                            disabled={biometricBusy}
+                            className="text-xs font-semibold text-rose-600 hover:text-rose-800 disabled:opacity-60"
+                          >
+                            Hapus
+                          </button>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-4 text-xs text-slate-400">Belum ada sidik jari terdaftar.</p>
+                )}
+                {biometricMessage ? <p className="mt-3 rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-800">{biometricMessage}</p> : null}
+                {biometricError ? <p className="mt-3 rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700">{biometricError}</p> : null}
+              </div>
+            ) : null}
             <button onClick={onLogout} className="mt-8 inline-flex h-11 items-center gap-2 rounded-md border border-rose-200 bg-white px-4 text-sm font-semibold text-rose-700 hover:bg-rose-50"><LogOut size={17} /> Keluar dari akun</button>
           </div>
         </div>
@@ -138,6 +288,17 @@ export default function AccountView({ session, onAuthenticated, onLogout, onBack
           {message ? <p className="rounded-md bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{message}</p> : null}
           <button className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-ink px-5 text-sm font-bold text-white transition hover:bg-emerald-900 disabled:opacity-60" disabled={isSubmitting} type="submit">{isSubmitting ? "Memproses..." : mode === "login" ? "Masuk" : mode === "signup" ? "Buat akun" : mode === "forgot" ? "Kirim instruksi" : "Simpan kata sandi"}<ArrowRight size={17} /></button>
         </form>
+
+        {mode === "login" && biometricAvailable ? (
+          <button
+            type="button"
+            onClick={handleBiometricLogin}
+            disabled={biometricBusy}
+            className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 text-sm font-bold text-emerald-900 transition hover:bg-emerald-100 disabled:opacity-60"
+          >
+            <Fingerprint size={18} /> {biometricBusy ? "Memindai sidik jari..." : "Masuk dengan sidik jari"}
+          </button>
+        ) : null}
 
         <div className="mt-6 border-t border-slate-100 pt-5 text-center text-sm text-slate-500">
           {mode === "login" ? <>Belum punya akun? <button className="bg-transparent font-bold text-brand" onClick={() => changeMode("signup")}>Daftar</button></> : mode === "signup" ? <>Sudah punya akun? <button className="bg-transparent font-bold text-brand" onClick={() => changeMode("login")}>Masuk</button></> : <button className="inline-flex items-center gap-2 bg-transparent font-bold text-brand" onClick={() => changeMode("login")}><ArrowLeft size={15} /> Kembali ke login</button>}

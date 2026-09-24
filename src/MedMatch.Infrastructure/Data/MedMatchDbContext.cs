@@ -14,6 +14,7 @@ public class MedMatchDbContext : DbContext
     public DbSet<QueueInfo> Queues => Set<QueueInfo>();
     public DbSet<UserAccount> Users => Set<UserAccount>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+    public DbSet<BiometricCredential> BiometricCredentials => Set<BiometricCredential>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -111,6 +112,18 @@ public class MedMatchDbContext : DbContext
             entity.Property(e => e.TokenHash).HasMaxLength(64).IsFixedLength().IsRequired();
             entity.HasIndex(e => e.TokenHash).IsUnique();
             entity.HasIndex(e => new { e.UserId, e.ExpiresAt });
+            entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<BiometricCredential>(entity =>
+        {
+            entity.ToTable("BiometricCredentials");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.CredentialId).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.PublicKey).IsRequired();
+            entity.Property(e => e.Label).HasMaxLength(100).IsRequired();
+            entity.HasIndex(e => e.CredentialId).IsUnique();
+            entity.HasIndex(e => e.UserId);
             entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
         });
     }

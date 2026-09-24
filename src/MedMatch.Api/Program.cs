@@ -1,4 +1,5 @@
 using System.Text;
+using Fido2NetLib;
 using MedMatch.Core.DTOs;
 using MedMatch.Core.Interfaces;
 using MedMatch.Core.Models;
@@ -56,6 +57,26 @@ if (hasDatabaseConfiguration)
             };
         });
     builder.Services.AddAuthorization();
+
+    builder.Services.AddMemoryCache();
+    var webAuthnOrigins = builder.Configuration.GetSection("WebAuthn:Origins").Get<string[]>()
+        ?? new[]
+        {
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:5174",
+            "http://127.0.0.1:5174"
+        };
+    var webAuthnConfiguration = new Fido2Configuration
+    {
+        RPID = builder.Configuration["WebAuthn:RPId"] ?? "localhost",
+        RPName = builder.Configuration["WebAuthn:RPName"] ?? "MedMatch",
+        Origins = new HashSet<string>(webAuthnOrigins)
+    };
+
+    builder.Services.AddSingleton(webAuthnConfiguration);
+    builder.Services.AddSingleton(_ => new Fido2(webAuthnConfiguration));
+    builder.Services.AddScoped<BiometricService>();
 }
 
 var app = builder.Build();
@@ -191,6 +212,8 @@ if (hasDatabaseConfiguration)
     })
     .WithName("ResetPassword")
     .WithOpenApi();
+
+    app.MapWebAuthnEndpoints();
 
     app.MapGet("/api/specialties", async (ISpecialtyRepository repository) =>
         Results.Ok(await repository.GetAllAsync()))

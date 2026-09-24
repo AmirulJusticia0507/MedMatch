@@ -110,7 +110,7 @@ public class AuthService
         return true;
     }
 
-    private AuthResponse CreateAuthResponse(UserAccount user)
+    public AuthResponse CreateAuthResponse(UserAccount user)
     {
         var expiresAt = DateTime.UtcNow.AddHours(8);
         var key = _configuration["Jwt:Key"]
