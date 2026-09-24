@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { BedDouble, Check, Clock3, Cross, MapPin, Navigation, Phone, RefreshCw, Stethoscope, UserRound, X } from "lucide-react";
 import type { HospitalRecommendation } from "../types";
 
@@ -13,9 +14,20 @@ export function HospitalDetail({
 }) {
   const typeLabel = typeof hospital.hospitalType === "number" ? hospitalTypeLabels[hospital.hospitalType] : hospital.hospitalType;
 
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
+
   return (
     <div className="drawer-backdrop" onClick={onClose}>
-      <aside className="detail-drawer" onClick={(event) => event.stopPropagation()}>
+      <aside className="detail-drawer" role="dialog" aria-modal="true" aria-label={`Detail ${hospital.hospitalName}`} onClick={(event) => event.stopPropagation()}>
         <div className="detail-drawer__header">
           <span className="panel-heading__eyebrow">Detail fasilitas</span>
           <button className="icon-button" onClick={onClose} aria-label="Tutup detail"><X size={19} /></button>
