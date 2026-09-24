@@ -1066,23 +1066,18 @@ function App() {
   };
 
   useEffect(() => {
-    const controller = new AbortController();
-
     const loadInitialData = async () => {
       try {
-        const liveSpecialties = await medmatchApi.getSpecialties(controller.signal);
+        const liveSpecialties = await medmatchApi.getSpecialties();
         if (liveSpecialties.length > 0) setSpecialties(liveSpecialties);
-      } catch (error) {
-        if (!isAbortError(error)) setSpecialties(specialtyOptions);
+      } catch {
+        setSpecialties(specialtyOptions);
       }
 
-      const online = await medmatchApi.getChatHealth(controller.signal);
-      if (online) setChatOnline(true);
-      await loadRecommendations(defaultFilters, controller.signal);
+      await loadRecommendations(defaultFilters);
     };
 
     void loadInitialData();
-    return () => controller.abort();
   }, []);
 
   const handleNavigate = (view: ViewId) => {

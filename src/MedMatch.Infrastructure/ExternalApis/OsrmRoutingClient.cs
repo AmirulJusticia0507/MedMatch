@@ -7,7 +7,7 @@ namespace MedMatch.Infrastructure.ExternalApis;
 
 public class OsrmOptions
 {
-    public string BaseUrl { get; set; } = "http://router.project-osrm.org";
+    public string BaseUrl { get; set; } = "https://router.project-osrm.org";
     public int TimeoutSeconds { get; set; } = 10;
 }
 
@@ -24,13 +24,14 @@ public class OsrmRoutingClient : ISpatialRoutingClient
         _logger = logger;
         _httpClient.BaseAddress = new Uri(_options.BaseUrl);
         _httpClient.Timeout = TimeSpan.FromSeconds(_options.TimeoutSeconds);
+        _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("MedMatch/1.0");
     }
 
     public async Task<int> GetTravelTimeMinutesAsync(double fromLat, double fromLng, double toLat, double toLng)
     {
         try
         {
-            var url = $"/route/v1/driving/{fromLng},{fromLat};{toLng},{toLat}?overview=false";
+            var url = FormattableString.Invariant($"/route/v1/driving/{fromLng},{fromLat};{toLng},{toLat}?overview=false");
             var response = await _httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
             
@@ -56,7 +57,7 @@ public class OsrmRoutingClient : ISpatialRoutingClient
     {
         try
         {
-            var url = $"/route/v1/driving/{fromLng},{fromLat};{toLng},{toLat}?overview=false";
+            var url = FormattableString.Invariant($"/route/v1/driving/{fromLng},{fromLat};{toLng},{toLat}?overview=false");
             var response = await _httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
             

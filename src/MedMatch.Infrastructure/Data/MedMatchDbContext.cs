@@ -17,8 +17,6 @@ public class MedMatchDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.HasPostgresExtension("postgis");
-
         modelBuilder.Entity<Hospital>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -38,7 +36,7 @@ public class MedMatchDbContext : DbContext
             entity.OwnsMany(e => e.Specialties, s =>
             {
                 s.WithOwner().HasForeignKey("HospitalId");
-                s.Property(p => p.SpecialtyCode).HasMaxLength(20);
+                s.Property(p => p.SpecialtyCode).HasMaxLength(50);
                 s.Property(p => p.Name).HasMaxLength(100);
                 s.Property(p => p.Category).HasConversion<int>();
             });
@@ -54,7 +52,7 @@ public class MedMatchDbContext : DbContext
             
             entity.OwnsOne(e => e.CurrentQueue, q =>
             {
-                q.Property(p => p.SpecialtyCode).HasMaxLength(20);
+                q.Property(p => p.SpecialtyCode).HasMaxLength(50);
                 q.Property(p => p.CurrentLength).IsRequired();
                 q.Property(p => p.CurrentServingNumber).IsRequired();
                 q.Property(p => p.EstimatedWaitMinutes).IsRequired();
@@ -69,7 +67,7 @@ public class MedMatchDbContext : DbContext
         modelBuilder.Entity<Specialty>(entity =>
         {
             entity.HasKey(e => e.Code);
-            entity.Property(e => e.Code).HasMaxLength(20);
+            entity.Property(e => e.Code).HasMaxLength(50);
             entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
             entity.Property(e => e.Description).HasMaxLength(500);
             entity.Property(e => e.Category).HasConversion<int>();
@@ -89,7 +87,7 @@ public class MedMatchDbContext : DbContext
         {
             entity.HasKey(e => new { e.HospitalId, e.SpecialtyCode });
             entity.Property(e => e.HospitalId).HasMaxLength(50);
-            entity.Property(e => e.SpecialtyCode).HasMaxLength(20);
+            entity.Property(e => e.SpecialtyCode).HasMaxLength(50);
             entity.Property(e => e.LastUpdated).HasColumnType("timestamp with time zone");
         });
     }

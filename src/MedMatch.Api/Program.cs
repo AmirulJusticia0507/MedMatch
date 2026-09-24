@@ -1,6 +1,7 @@
 using MedMatch.Core.DTOs;
 using MedMatch.Core.Interfaces;
 using MedMatch.Infrastructure;
+using MedMatch.Infrastructure.Data;
 using MedMatch.Recommendation;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,7 +38,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseCors("MedMatchFrontend");
 
 var summaries = new[]
@@ -68,8 +72,25 @@ app.MapGet("/api/chat/health", async (IChatAiClient chatClient) =>
 .WithName("ChatHealth")
 .WithOpenApi();
 
+if (!hasDatabaseConfiguration)
+{
+    app.MapGet("/api/specialties", () => Results.Ok(Array.Empty<SpecialtyDto>()))
+        .WithName("GetSpecialties")
+        .WithOpenApi();
+
+    app.MapGet("/api/recommendations", () => Results.Ok(Array.Empty<HospitalRecommendationDto>()))
+        .WithName("GetRecommendations")
+        .WithOpenApi();
+}
+
 if (hasDatabaseConfiguration)
 {
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<MedMatchDbContext>();
+        await DbSeeder.InitializeAsync(db);
+    }
+
     app.MapGet("/api/specialties", async (ISpecialtyRepository repository) =>
         Results.Ok(await repository.GetAllAsync()))
         .WithName("GetSpecialties")
@@ -111,6 +132,11 @@ if (hasDatabaseConfiguration)
     })
     .WithName("GetRecommendations")
     .WithOpenApi();
+
+    app.MapGet("/api/hospitals", async (IHospitalRepository repository) =>
+        Results.Ok(await repository.GetAllAsync()))
+        .WithName("GetHospitals")
+        .WithOpenApi();
 
     app.MapGet("/api/hospitals/nearby", async (
         double latitude,

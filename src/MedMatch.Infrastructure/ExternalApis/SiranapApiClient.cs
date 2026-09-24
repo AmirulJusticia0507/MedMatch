@@ -83,7 +83,7 @@ public class SiranapApiClient : ISiranapApiClient
             {
                 Code = d.Kode,
                 Name = d.Nama,
-                Description = d.Deskripsi,
+                Description = d.Deskripsi ?? string.Empty,
                 Category = ParseCategory(d.Kategori),
                 IsActive = true
             }).ToList() ?? new List<Specialty>();

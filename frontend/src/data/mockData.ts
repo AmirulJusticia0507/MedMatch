@@ -100,7 +100,7 @@ export const mockRecommendations: HospitalRecommendation[] = [
   },
   {
     hospitalId: "RS-UKD-005",
-    hospitalName: "RS UNIFIED DADI POETRA",
+    hospitalName: "RS Unified Dadi Poetra",
     distanceKm: 12.4,
     estimatedTravelMinutes: 41,
     currentQueueCount: 14,
@@ -111,7 +111,7 @@ export const mockRecommendations: HospitalRecommendation[] = [
     specialtyCode: "CARDIOLOGY",
     specialtyName: "Jantung",
     hospitalType: 1,
-    address: "Jl.$-$ Jakarta",
+    address: "Jl. Raya Lebak Bulus No. 1, Jakarta Selatan",
     phone: "+62 21 280 8888",
     latitude: -6.2402,
     longitude: 106.8927,
