@@ -1,4 +1,4 @@
-import { ArrowRight, Bell, Bot, Building2, CalendarDays, ChevronDown, ChevronRight, CircleHelp, Cross, LayoutDashboard, LogOut, Menu, PanelLeftClose, PanelLeftOpen, RefreshCw, Settings, ShieldCheck, Sparkles, UserRound, X } from "lucide-react";
+import { ArrowRight, Bell, Bot, Building2, CalendarDays, ChevronDown, ChevronRight, CircleHelp, Cross, LayoutDashboard, LogOut, Menu, Moon, PanelLeftClose, PanelLeftOpen, RefreshCw, Settings, ShieldCheck, Sparkles, Sun, UserRound, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { AuthResponse, DataSource } from "../types";
 
@@ -133,7 +133,9 @@ export function Topbar({
   isRefreshing,
   onMenu,
   onRefresh,
-  onAccount
+  onAccount,
+  theme,
+  onToggleTheme
 }: {
   title: string;
   dataSource: DataSource;
@@ -141,6 +143,8 @@ export function Topbar({
   onMenu: () => void;
   onRefresh: () => void;
   onAccount: () => void;
+  theme: "light" | "dark";
+  onToggleTheme: () => void;
 }) {
   return (
     <header className="topbar">
@@ -168,8 +172,14 @@ export function Topbar({
           <Bell size={19} />
           <span />
         </button>
+        <ThemeToggle theme={theme} onToggle={onToggleTheme} />
         <button className="avatar avatar--dark" onClick={onAccount} aria-label="Buka akun"><UserRound size={17} /></button>
       </div>
     </header>
   );
+}
+
+export function ThemeToggle({ theme, onToggle, className = "" }: { theme: "light" | "dark"; onToggle: () => void; className?: string }) {
+  const isDark = theme === "dark";
+  return <button type="button" className={`icon-button theme-toggle ${className}`} onClick={onToggle} aria-label={isDark ? "Gunakan mode terang" : "Gunakan mode gelap"} title={isDark ? "Mode terang" : "Mode gelap"}>{isDark ? <Sun size={18} /> : <Moon size={18} />}</button>;
 }

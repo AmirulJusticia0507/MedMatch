@@ -4,7 +4,7 @@ import AccountView from "./components/AccountView";
 import { AssistantView, ChatWidget } from "./components/Chat";
 import { FacilitiesView } from "./components/Facilities";
 import { HospitalDetail } from "./components/HospitalDetail";
-import { Sidebar, Topbar, viewTitles, type ViewId } from "./components/Layout";
+import { Sidebar, ThemeToggle, Topbar, viewTitles, type ViewId } from "./components/Layout";
 import { OverviewView, RecommendationsView } from "./components/Recommendations";
 import { HelpCenterView, PreferencesView } from "./components/SettingsViews";
 import { medmatchApi } from "./api/medmatch";
@@ -52,6 +52,11 @@ function fallbackChatReply(message: string): string {
 }
 
 function App() {
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    const saved = localStorage.getItem("medmatch-theme");
+    if (saved === "light" || saved === "dark") return saved;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  });
   const [activeView, setActiveView] = useState<ViewId>(() => {
     const hash = window.location.hash.slice(1) as ViewId;
     return viewTitles[hash] ? hash : "overview";
@@ -89,6 +94,12 @@ function App() {
   const [chatOnline, setChatOnline] = useState(false);
 
   const currentSpecialty = useMemo(() => getSpecialtyName(filters.specialtyCode, specialties), [filters.specialtyCode, specialties]);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+    localStorage.setItem("medmatch-theme", theme);
+  }, [theme]);
 
   const loadRecommendations = async (nextFilters: RecommendationFilters, signal?: AbortSignal) => {
     setIsRefreshing(true);
@@ -261,6 +272,7 @@ function App() {
   if (!authSession) {
     return (
       <main className="min-h-screen bg-canvas px-5 py-6 sm:px-8">
+        <ThemeToggle theme={theme} onToggle={() => setTheme((current) => current === "dark" ? "light" : "dark")} className="theme-toggle--standalone" />
         <AccountView session={null} onAuthenticated={handleAuthenticated} onLogout={handleLogout} onBack={() => undefined} standalone />
       </main>
     );
@@ -325,7 +337,7 @@ function App() {
       <Sidebar activeView={activeView} session={authSession} isOpen={isMobileMenuOpen} isCollapsed={isSidebarCollapsed} onNavigate={handleNavigate} onLogout={handleLogout} onToggleCollapse={handleToggleSidebar} onClose={() => setIsMobileMenuOpen(false)} />
       {isMobileMenuOpen ? <button className="sidebar-scrim" onClick={() => setIsMobileMenuOpen(false)} aria-label="Tutup menu" /> : null}
       <div className={`main-shell ${isSidebarCollapsed ? "main-shell--sidebar-collapsed" : ""}`}>
-        <Topbar title={viewTitles[activeView]} dataSource={dataSource} isRefreshing={isRefreshing} onMenu={() => setIsMobileMenuOpen(true)} onRefresh={handleRefresh} onAccount={() => handleNavigate("account")} />
+        <Topbar title={viewTitles[activeView]} dataSource={dataSource} isRefreshing={isRefreshing} onMenu={() => setIsMobileMenuOpen(true)} onRefresh={handleRefresh} onAccount={() => handleNavigate("account")} theme={theme} onToggleTheme={() => setTheme((current) => current === "dark" ? "light" : "dark")} />
         <main className="page-content">
           {activeView !== "account" ? <div className="page-content__context"><span>Senang bertemu kembali, {authSession?.fullName.split(" ")[0] ?? "Anda"}</span><span className="page-content__specialty">Pencarian aktif · {currentSpecialty}</span></div> : null}
           {view}

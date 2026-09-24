@@ -3309,3 +3309,79 @@ strong,
 .help-email span { display: grid; gap: 3px; }
 .help-email small { color: var(--ink-soft); }
 @media (max-width: 800px) { .settings-layout, .help-grid { grid-template-columns: 1fr; } .settings-actions { align-items: stretch; flex-direction: column; } }
+
+.theme-toggle--standalone { position: fixed; top: 20px; right: 20px; z-index: 20; background: var(--surface); border: 1px solid var(--line); color: var(--ink); box-shadow: var(--shadow); }
+
+:root[data-theme="dark"] {
+  color: #dbe8e3;
+  background: #101817;
+  --ink: #dbe8e3;
+  --ink-deep: #0b2824;
+  --ink-soft: #9bb1aa;
+  --muted: #80958f;
+  --canvas: #101817;
+  --surface: #182321;
+  --line: #30403c;
+  --line-soft: #273632;
+  --mint: #183b33;
+  --mint-strong: #69c5aa;
+  --green: #69c5aa;
+  --yellow-soft: #3c321f;
+  --coral-soft: #402924;
+  --blue-soft: #21343e;
+  --shadow: 0 16px 40px rgba(0, 0, 0, .24);
+}
+
+:root[data-theme="dark"] body,
+:root[data-theme="dark"] .main-shell,
+:root[data-theme="dark"] .page-content,
+:root[data-theme="dark"] .bg-canvas { background: var(--canvas) !important; color: var(--ink); }
+:root[data-theme="dark"] .topbar,
+:root[data-theme="dark"] .panel,
+:root[data-theme="dark"] .metric-card,
+:root[data-theme="dark"] .recommendation-card,
+:root[data-theme="dark"] .facility-summary-strip,
+:root[data-theme="dark"] .bg-white { background: var(--surface) !important; border-color: var(--line) !important; }
+:root[data-theme="dark"] .topbar { box-shadow: 0 1px 0 var(--line); }
+:root[data-theme="dark"] .search-form,
+:root[data-theme="dark"] .search-field,
+:root[data-theme="dark"] .search-field__control,
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea { background-color: #202d2a !important; color: var(--ink) !important; border-color: var(--line) !important; }
+:root[data-theme="dark"] option { background: #202d2a; color: var(--ink); }
+:root[data-theme="dark"] .text-ink,
+:root[data-theme="dark"] .text-slate-800,
+:root[data-theme="dark"] .text-slate-700,
+:root[data-theme="dark"] .text-slate-600 { color: var(--ink) !important; }
+:root[data-theme="dark"] .text-slate-500,
+:root[data-theme="dark"] .text-slate-400 { color: var(--ink-soft) !important; }
+:root[data-theme="dark"] .border-slate-100,
+:root[data-theme="dark"] .border-slate-200,
+:root[data-theme="dark"] .border-emerald-100,
+:root[data-theme="dark"] .border-emerald-200 { border-color: var(--line) !important; }
+:root[data-theme="dark"] .bg-emerald-50,
+:root[data-theme="dark"] .bg-emerald-100 { background: #17342e !important; }
+:root[data-theme="dark"] .bg-rose-50 { background: #3a2225 !important; }
+:root[data-theme="dark"] .text-emerald-800,
+:root[data-theme="dark"] .text-emerald-900 { color: #a9decf !important; }
+:root[data-theme="dark"] .text-rose-600,
+:root[data-theme="dark"] .text-rose-700,
+:root[data-theme="dark"] .text-rose-800 { color: #f1a7af !important; }
+:root[data-theme="dark"] .table-wrap,
+:root[data-theme="dark"] .facility-table th,
+:root[data-theme="dark"] .facility-table td,
+:root[data-theme="dark"] .recommendation-card__metrics,
+:root[data-theme="dark"] .map-summary { border-color: var(--line); }
+:root[data-theme="dark"] .facility-table tr:hover td { background: #1d2a27; }
+:root[data-theme="dark"] .metric-card__more,
+:root[data-theme="dark"] .row-action,
+:root[data-theme="dark"] .panel-heading__action,
+:root[data-theme="dark"] .theme-toggle { background: #22302d; color: var(--ink); border-color: var(--line); }
+:root[data-theme="dark"] .connection-notice { background: #26352f; border-color: #3b514a; color: #c8ddd6; }
+:root[data-theme="dark"] .leaflet-container { background: #17201e; }
+:root[data-theme="dark"] .leaflet-popup-content-wrapper,
+:root[data-theme="dark"] .leaflet-popup-tip { background: #202d2a; color: var(--ink); }
+:root[data-theme="dark"] .help-contact > div { background: var(--surface); border-color: var(--line); }
+:root[data-theme="dark"] .preference-row i { background: #41514d; }
+:root[data-theme="dark"] .app-footer { color: var(--ink-soft); border-color: var(--line); }
