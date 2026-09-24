@@ -23,11 +23,12 @@ interface AccountViewProps {
   onAuthenticated: (session: AuthResponse) => void;
   onLogout: () => void;
   onBack: () => void;
+  standalone?: boolean;
 }
 
 const inputClass = "h-12 w-full rounded-md border border-slate-200 bg-white pl-11 pr-4 text-sm text-slate-800 outline-none transition focus:border-brand focus:ring-4 focus:ring-emerald-100";
 
-export default function AccountView({ session, onAuthenticated, onLogout, onBack }: AccountViewProps) {
+export default function AccountView({ session, onAuthenticated, onLogout, onBack, standalone = false }: AccountViewProps) {
   const [mode, setMode] = useState<AuthMode>("login");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -120,7 +121,7 @@ export default function AccountView({ session, onAuthenticated, onLogout, onBack
       </div>
 
       <div className="rounded-md border border-slate-200 bg-white p-6 shadow-soft sm:p-8">
-        <button className="mb-7 inline-flex items-center gap-2 bg-transparent text-sm font-semibold text-slate-500 hover:text-ink" onClick={onBack}><ArrowLeft size={17} /> Kembali</button>
+        {!standalone ? <button className="mb-7 inline-flex items-center gap-2 bg-transparent text-sm font-semibold text-slate-500 hover:text-ink" onClick={onBack}><ArrowLeft size={17} /> Kembali</button> : null}
         <div className="mb-7">
           <h2 className="text-2xl font-bold text-ink">{title}</h2>
           <p className="mt-2 text-sm leading-6 text-slate-500">{subtitle}</p>

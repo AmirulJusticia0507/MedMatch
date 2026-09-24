@@ -1,4 +1,4 @@
-import { ArrowRight, Bell, Bot, Building2, CalendarDays, ChevronDown, ChevronRight, CircleHelp, Cross, LayoutDashboard, Menu, RefreshCw, Settings, ShieldCheck, Sparkles, UserRound, X } from "lucide-react";
+import { ArrowRight, Bell, Bot, Building2, CalendarDays, ChevronDown, ChevronRight, CircleHelp, Cross, LayoutDashboard, LogOut, Menu, RefreshCw, Settings, ShieldCheck, Sparkles, UserRound, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { AuthResponse, DataSource } from "../types";
 
@@ -40,12 +40,14 @@ export function Sidebar({
   session,
   isOpen,
   onNavigate,
+  onLogout,
   onClose
 }: {
   activeView: ViewId;
   session: AuthResponse | null;
   isOpen: boolean;
   onNavigate: (view: ViewId) => void;
+  onLogout: () => void;
   onClose: () => void;
 }) {
   return (
@@ -95,6 +97,7 @@ export function Sidebar({
           <CircleHelp size={18} />
           <span>Pusat bantuan</span>
         </button>
+        {session ? <button className="sidebar__nav-item" onClick={onLogout}><LogOut size={18} /><span>Keluar</span></button> : null}
       </nav>
 
       <div className="sidebar__spacer" />

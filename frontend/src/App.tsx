@@ -55,7 +55,13 @@ function App() {
   const [authSession, setAuthSession] = useState<AuthResponse | null>(() => {
     try {
       const stored = sessionStorage.getItem("medmatch-auth");
-      return stored ? JSON.parse(stored) as AuthResponse : null;
+      if (!stored) return null;
+      const session = JSON.parse(stored) as AuthResponse;
+      if (new Date(session.expiresAt).getTime() <= Date.now()) {
+        sessionStorage.removeItem("medmatch-auth");
+        return null;
+      }
+      return session;
     } catch {
       return null;
     }
@@ -140,6 +146,8 @@ function App() {
   const handleLogout = () => {
     sessionStorage.removeItem("medmatch-auth");
     setAuthSession(null);
+    setActiveView("overview");
+    window.location.hash = "overview";
   };
 
   const handleFilterChange = (key: FilterKey, value: string) => {
@@ -214,6 +222,14 @@ function App() {
     }
   };
 
+  if (!authSession) {
+    return (
+      <main className="min-h-screen bg-canvas px-5 py-6 sm:px-8">
+        <AccountView session={null} onAuthenticated={handleAuthenticated} onLogout={handleLogout} onBack={() => undefined} standalone />
+      </main>
+    );
+  }
+
   const view = activeView === "overview" ? (
     <OverviewView
       filters={filters}
@@ -266,7 +282,7 @@ function App() {
 
   return (
     <div className="app-shell">
-      <Sidebar activeView={activeView} session={authSession} isOpen={isMobileMenuOpen} onNavigate={handleNavigate} onClose={() => setIsMobileMenuOpen(false)} />
+      <Sidebar activeView={activeView} session={authSession} isOpen={isMobileMenuOpen} onNavigate={handleNavigate} onLogout={handleLogout} onClose={() => setIsMobileMenuOpen(false)} />
       {isMobileMenuOpen ? <button className="sidebar-scrim" onClick={() => setIsMobileMenuOpen(false)} aria-label="Tutup menu" /> : null}
       <div className="main-shell">
         <Topbar title={viewTitles[activeView]} dataSource={dataSource} isRefreshing={isRefreshing} onMenu={() => setIsMobileMenuOpen(true)} onRefresh={handleRefresh} onAccount={() => handleNavigate("account")} />
